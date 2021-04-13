@@ -16,9 +16,20 @@ public class SPA {
     }
 
     static void printTree(Node<ASTNode> node) {
-        System.out.println(node.getData());
+        printTree(node, 0);
+    }
+
+    static void printTree(Node<ASTNode> node, int depth) {
+        String cut = "";
+        for(int i=0; i<depth; i++) cut += " | ";
+        if(depth>0) cut += " └ ";
+
+        System.out.println(cut + node.getData());
+
+        depth++;
+
         for (Node<ASTNode> astNode : node.getChildren()) {
-            printTree(astNode);
+            printTree(astNode, depth);
         }
     }
 }
