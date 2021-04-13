@@ -1,0 +1,24 @@
+package pl.edu.pb.wi.spa;
+
+import pl.edu.pb.wi.spa.parser.Parser;
+import pl.edu.pb.wi.spa.tree.ASTNode;
+import pl.edu.pb.wi.spa.tree.Node;
+
+public class SPA {
+    public static void main(String[] args) {
+        final String sourceFile = "tests/iteracja1/prog1.simple";
+        Parser parser = new Parser();
+
+        parser.parse(sourceFile);
+
+        Node<ASTNode> ast = parser.getASTTree().get(0).getChildren().get(0);
+        printTree(ast);
+    }
+
+    static void printTree(Node<ASTNode> node) {
+        System.out.println(node.getData());
+        for (Node<ASTNode> astNode : node.getChildren()) {
+            printTree(astNode);
+        }
+    }
+}
