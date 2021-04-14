@@ -1,2 +1,4 @@
 procedure Trzecia {
-    a = t * a + d + k * b; }
+    a = t * a + d + k * b;
+    while a {
+        b = a + 1; } }

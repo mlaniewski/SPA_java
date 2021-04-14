@@ -1,5 +1,6 @@
 package pl.edu.pb.wi.spa.parser;
 
+import jdk.nashorn.internal.codegen.CompilerConstants;
 import pl.edu.pb.wi.spa.ast.builder.Builder;
 import pl.edu.pb.wi.spa.exception.ParserException;
 import pl.edu.pb.wi.spa.tree.ASTNode;
@@ -18,6 +19,7 @@ public class Parser {
     private Iterator<String> tokens;
     private String token;
     private Builder builder = new Builder();
+    private String procName;
 
     @Deprecated
     public List<Node<ASTNode>> getASTTree() {
@@ -83,7 +85,7 @@ public class Parser {
         validate(match(token, "procedure"), String.format("Expected 'procedure'. Found '%s'.", token));
         token = tokens.next();
         validate(matchName(token), String.format("Expected procedure name. Found '%s'.", token));
-        String procName = token;
+        procName = token;
         Node<ASTNode> procNode = builder.createNode(NodeType.PROCEDURE);
         builder.addNodeParameter(procNode, NodeParamType.NAME, procName);
         builder.addChild(procNode, parseStmtLst());
@@ -104,10 +106,54 @@ public class Parser {
     }
 
     private Node<ASTNode> parseStmt() throws ParserException {
-        //TODO if call
-        //TODO if while
-        //TODO if if
+        if(match(token, "call")){
+            return parseCall();
+        }
+        if(match(token, "while")){
+            return parseWhile();
+        }
+        if(match(token, "if")){
+            return parseIf();
+        }
         return parseAssignment();
+    }
+
+    private Node<ASTNode> parseCall() throws ParserException {
+        token = tokens.next();
+        validate(matchName(token), String.format("Expected calle procedure name. Found '%s'.", token));
+        Node<ASTNode> callNode = builder.createNode(NodeType.CALL);
+        builder.addNodeParameter(callNode, NodeParamType.CALLER, procName);
+        builder.addNodeParameter(callNode, NodeParamType.CALLEE, token);
+        token = tokens.next();
+        validate(match(token, ";"), String.format("Expected ';'. Found '%s'.", token));
+        token = tokens.next();
+        return callNode;
+    }
+
+    private Node<ASTNode> parseWhile() throws ParserException {
+        //token = tokens.next();
+        validate(matchName(token), String.format("Expected while. Found '%s'.", token));
+        Node<ASTNode> whileNODE = builder.createNode(NodeType.WHILE);
+        builder.addNodeParameter(whileNODE, NodeParamType.COND, token);
+        token = tokens.next();
+        builder.addChild(whileNODE, parseStmtLst());
+
+        return whileNODE;
+    }
+
+    private Node<ASTNode> parseIf() throws ParserException {
+        token = tokens.next();
+        validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
+        Node<ASTNode> ifNode = builder.createNode(NodeType.IF);
+        builder.addNodeParameter(ifNode, NodeParamType.COND, token);
+        token = tokens.next();
+        validate(match(token, "then"), String.format("Expected 'then'. Found '%s'.", token));
+        token = tokens.next();
+        builder.addChild(ifNode, parseStmtLst());  //-->co tu powinno byc??
+        validate(match(token, "else"), String.format("Expected 'else'. Found '%s'.", token));
+        token = tokens.next();
+        builder.addChild(ifNode, parseStmtLst());  //-->co tu powinno byc??
+        return ifNode;
     }
 
     private Node<ASTNode> parseAssignment() throws ParserException {
