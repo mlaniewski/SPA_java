@@ -1,6 +1,5 @@
 package pl.edu.pb.wi.spa.parser;
 
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import pl.edu.pb.wi.spa.ast.builder.Builder;
 import pl.edu.pb.wi.spa.exception.ParserException;
 import pl.edu.pb.wi.spa.tree.ASTNode;
@@ -18,12 +17,11 @@ import java.util.Scanner;
 public class Parser {
     private Iterator<String> tokens;
     private String token;
-    private Builder builder = new Builder();
+    private Builder builder;
     private String procName;
 
-    @Deprecated
-    public List<Node<ASTNode>> getASTTree() {
-        return builder.getAstTree();
+    public Parser(Builder builder) {
+        this.builder = builder;
     }
 
     public void parse(String filename) {

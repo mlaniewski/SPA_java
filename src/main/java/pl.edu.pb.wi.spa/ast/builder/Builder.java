@@ -163,7 +163,45 @@ public class Builder {
         node.getData().setParam(paramType, value);
     }
 
-    public List<Node<ASTNode>> getAstTree() {
-        return astTree;
+    public Node<ASTNode> getAstTree() {
+        return astTree.get(0);
+    }
+
+    public AST getAST() {
+        List<Node<ASTNode>> list = getAstTreeAsList();
+
+        addLineNumbers(list);
+
+        return null;
+    }
+
+    private void addLineNumbers(List<Node<ASTNode>> list) {
+        int lineNumber = 0;
+        for (Node<ASTNode> node : list) {
+            ASTNode astNode = node.getData();
+            switch (astNode.getNodeType()) {
+                case CALL:
+                case WHILE:
+                case IF:
+                case ASSIGN:
+                    astNode.setLineNumber(++lineNumber);
+                    programLines.add(node);
+            }
+        }
+    }
+
+    private List<Node<ASTNode>> getAstTreeAsList() {
+        List<Node<ASTNode>> list = new ArrayList<>();
+        Node<ASTNode> astTree = getAstTree();
+        list.add(astTree);
+        getNextNode(astTree.getChildren().get(0), list);
+        return list;
+    }
+
+    private void getNextNode(Node<ASTNode> node, List<Node<ASTNode>> list) {
+        list.add(node);
+        for (Node<ASTNode> astNode : node.getChildren()) {
+            getNextNode(astNode, list);
+        }
     }
 }

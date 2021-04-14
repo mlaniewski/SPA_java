@@ -45,6 +45,14 @@ public class ASTNode {
         return nodeType;
     }
 
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
     @Override
     public String toString() {
         return "ASTNode{" +
