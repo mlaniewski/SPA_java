@@ -40,6 +40,9 @@ public class ASTNode {
         return this.nodes.get(id);
     }
 
+    public int getId() {
+        return id;
+    }
 
     public NodeType getNodeType() {
         return nodeType;

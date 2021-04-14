@@ -2,9 +2,11 @@ package pl.edu.pb.wi.spa.ast;
 
 import pl.edu.pb.wi.spa.tree.ASTNode;
 import pl.edu.pb.wi.spa.tree.Node;
+import pl.edu.pb.wi.spa.tree.NodeParamType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class AST {
@@ -103,7 +105,16 @@ public class AST {
         this.programLines = programLines;
     }
 
+    @Deprecated
     private List<Node<ASTNode>> createNodeCollection(Set<Integer> begin, Set<Integer> end) {
+        return null;
+    }
+
+    public Node<ASTNode> getProcedureByName(String procName) {
+        Optional<Node<ASTNode>> procNode = procedures.stream().filter(node -> node.getData().getParam(NodeParamType.NAME).equals(procName)).findFirst();
+        if (procNode.isPresent()) {
+            return procNode.get();
+        }
         return null;
     }
 }

@@ -171,6 +171,7 @@ public class Builder {
         List<Node<ASTNode>> list = getAstTreeAsList();
 
         addLineNumbers(list);
+        initializeCallMaps();
 
         return null;
     }
@@ -187,6 +188,24 @@ public class Builder {
                     astNode.setLineNumber(++lineNumber);
                     programLines.add(node);
             }
+        }
+    }
+
+    private void initializeCallMaps() {
+        for (Node<ASTNode> callNode : callNodes) {
+            ASTNode node = callNode.getData();
+            ASTNode caller = ast.getProcedureByName(node.getParam(NodeParamType.CALLER)).getData();
+            ASTNode callee = ast.getProcedureByName(node.getParam(NodeParamType.CALLEE)).getData();
+
+            callers.computeIfAbsent(caller.getId(), k -> new HashSet<>());
+            callers.get(caller.getId()).add(callee.getId());
+            callees.computeIfAbsent(callee.getId(), k -> new HashSet<>());
+            callees.get(callee.getId()).add(caller.getId());
+            //*
+            callersT.computeIfAbsent(caller.getId(), k -> new HashSet<>());
+            callersT.get(caller.getId()).add(callee.getId());
+            calleesT.computeIfAbsent(callee.getId(), k -> new HashSet<>());
+            calleesT.get(callee.getId()).add(caller.getId());
         }
     }
 
