@@ -7,7 +7,7 @@ import pl.edu.pb.wi.spa.tree.Node;
 
 public class SPA {
     public static void main(String[] args) {
-        final String sourceFile = "tests/iteracja1/prog1.simple";
+        final String sourceFile = "tests/iteracja1/prog3.simple";
         Builder builder = new Builder();
         Parser parser = new Parser(builder);
 

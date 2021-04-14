@@ -1,0 +1,37 @@
+procedure Pierwsza {
+	t = 1;
+	a = t + 10;
+	d = t * a + 2;
+	call Trzecia;
+	b = t + a;
+	call Czwarta;
+	b = t + a;
+	if t then {
+		k = a - d;
+		while c {
+			d = d + t;
+			c = d + 1; }
+		a = d + t; }
+	else {
+		a = d + t;
+		call Czwarta;
+		c = c - 1; }
+	call Druga; }
+
+procedure Druga {
+	while c {
+		t = d + 3 * a + c;
+		call Trzecia;
+		c = c + 20; }
+		d = t; }
+
+procedure Trzecia {
+	while d {
+		if t then {
+			d = t + 2; }
+		else {
+			a = t * a + d + k * b; }}
+	c = t + k + d; }
+
+procedure Czwarta {
+	t = a + t; }

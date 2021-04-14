@@ -29,13 +29,12 @@ public class Parser {
             tokens = createTokenList(filename).iterator();
             Node<ASTNode> program = builder.createNode(NodeType.PROGRAM);
 
+            token = tokens.next();
             while (tokens.hasNext()) {
                 builder.addChild(program, parseProcedure());
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (ParserException e) {
+        } catch (FileNotFoundException | ParserException e) {
             e.printStackTrace();
         }
     }
@@ -79,27 +78,28 @@ public class Parser {
     }
 
     private Node<ASTNode> parseProcedure() throws ParserException {
-        token = tokens.next();
         validate(match(token, "procedure"), String.format("Expected 'procedure'. Found '%s'.", token));
         token = tokens.next();
         validate(matchName(token), String.format("Expected procedure name. Found '%s'.", token));
         procName = token;
+        token = tokens.next();
         Node<ASTNode> procNode = builder.createNode(NodeType.PROCEDURE);
         builder.addNodeParameter(procNode, NodeParamType.NAME, procName);
-        builder.addChild(procNode, parseStmtLst());
+        builder.addChild(procNode, parseStmtLst(NodeType.STMTLST));
         return procNode;
     }
 
-    private Node<ASTNode> parseStmtLst() throws ParserException {
-        token = tokens.next();
+    private Node<ASTNode> parseStmtLst(NodeType nodeType) throws ParserException {
         validate(match(token, "{"), String.format("Expected '{'. Found '%s'.", token));
         token = tokens.next();
         validate(!match(token, "}"), "StmtLst must have at least one stmt.");
-        Node<ASTNode> stmtLstNode = builder.createNode(NodeType.STMTLST);
+        Node<ASTNode> stmtLstNode = builder.createNode(nodeType);
         while (!match(token, "}")) {
             builder.addChild(stmtLstNode, parseStmt());
         }
-        //tokens.next();
+        if (tokens.hasNext()) {
+            token = tokens.next();
+        }
         return stmtLstNode;
     }
 
@@ -129,12 +129,12 @@ public class Parser {
     }
 
     private Node<ASTNode> parseWhile() throws ParserException {
-        //token = tokens.next();
+        token = tokens.next();
         validate(matchName(token), String.format("Expected while. Found '%s'.", token));
         Node<ASTNode> whileNODE = builder.createNode(NodeType.WHILE);
         builder.addNodeParameter(whileNODE, NodeParamType.COND, token);
         token = tokens.next();
-        builder.addChild(whileNODE, parseStmtLst());
+        builder.addChild(whileNODE, parseStmtLst(NodeType.STMTLST));
 
         return whileNODE;
     }
@@ -147,10 +147,10 @@ public class Parser {
         token = tokens.next();
         validate(match(token, "then"), String.format("Expected 'then'. Found '%s'.", token));
         token = tokens.next();
-        builder.addChild(ifNode, parseStmtLst());  //-->co tu powinno byc??
+        builder.addChild(ifNode, parseStmtLst(NodeType.THEN));
         validate(match(token, "else"), String.format("Expected 'else'. Found '%s'.", token));
         token = tokens.next();
-        builder.addChild(ifNode, parseStmtLst());  //-->co tu powinno byc??
+        builder.addChild(ifNode, parseStmtLst(NodeType.ELSE));
         return ifNode;
     }
 
