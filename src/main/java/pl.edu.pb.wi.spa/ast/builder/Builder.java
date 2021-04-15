@@ -45,7 +45,7 @@ public class Builder {
 
     private List<Node<ASTNode>> varNodes;
     private List<Node<ASTNode>> constantNodes;
-
+    private List<Integer> tempUiVector;
 
     public Builder() {
         ASTNode n = new ASTNode(NodeType.PROGRAM);
@@ -172,6 +172,8 @@ public class Builder {
 
         addLineNumbers(list);
         initializeCallMaps();
+        tempUiVector = new ArrayList<>();
+        initializeParentMap(list.get(0));
 
         return null;
     }
@@ -206,6 +208,38 @@ public class Builder {
             callersT.get(caller.getId()).add(callee.getId());
             calleesT.computeIfAbsent(callee.getId(), k -> new HashSet<>());
             calleesT.get(callee.getId()).add(caller.getId());
+        }
+    }
+
+    private void initializeParentMap(Node<ASTNode> node) {
+        NodeType nodeType = node.getData().getNodeType();
+        boolean isLeafNode = nodeType == NodeType.CALL || nodeType == NodeType.ASSIGN;
+        boolean isContainerNode = nodeType == NodeType.WHILE || nodeType == NodeType.IF;
+        boolean isStmt = isLeafNode || isContainerNode;
+
+        int nodeId = node.getData().getId();
+        if (isStmt && !tempUiVector.isEmpty()) {
+            parent.put(nodeId, tempUiVector.get(tempUiVector.size()-1)); //(*parent)[(*node)->id] = tempUiVector.back();
+            parentT.computeIfAbsent(nodeId, k -> new HashSet<>());
+            for (Integer id : tempUiVector) {
+                parentT.get(nodeId).add(id); //(*parentT)[(*node)->id].insert(tempUiVector.begin(), tempUiVector.end());
+            }
+            children.computeIfAbsent(parent.get(nodeId), k -> new HashSet<>());
+            children.get(parent.get(nodeId)).add(nodeId); //(*children)[(*parent)[(*node)->id]].insert((*node)->id);
+            childrenT.computeIfAbsent(parent.get(nodeId), k -> new HashSet<>());
+            childrenT.get(parent.get(nodeId)).add(nodeId); //(*childrenT)[(*parent)[(*node)->id]].insert((*node)->id);
+        }
+        if (!isLeafNode) {
+            if (isContainerNode) {
+                tempUiVector.add(nodeId);
+            }
+            for (Node<ASTNode> child : node.getChildren()) {
+                initializeParentMap(child);
+            }
+            if (isContainerNode) {
+                tempUiVector.remove(tempUiVector.get(tempUiVector.size() - 1)); // tempUiVector.pop_back();
+
+            }
         }
     }
 
