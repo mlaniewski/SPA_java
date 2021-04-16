@@ -11,7 +11,7 @@ public class ASTNode {
     //public?
     private NodeType nodeType;
     private int lineNumber;
-    private int id;
+    private Integer id;
 
 
     public ASTNode(NodeType nodeType) {
@@ -40,7 +40,7 @@ public class ASTNode {
         return nodes.get(id);
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

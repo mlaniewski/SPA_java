@@ -246,12 +246,13 @@ public class Builder {
     }
 
     private void initializeModifiesAndUsesMaps() {
-        for (Node<ASTNode> assignNode : assignments) {
-            String variable = assignNode.getData().getParam(NodeParamType.NAME);
-            int nodeId = assignNode.getData().getId();
+        for (Node<ASTNode> assignIt : assignments) {
+            Node<ASTNode> assignNodeIt = assignIt.getChildren().iterator().next();
+            String variable = assignNodeIt.getData().getParam(NodeParamType.NAME);
+            int nodeId = assignIt.getData().getId();
             modifies.computeIfAbsent(nodeId, k -> new HashSet<>());
             modifies.get(nodeId).add(variable);// (*modifies)[(**asgnIt)->id].insert(variable);
-            initializeUsesAssignment(assignNode, assignNode);
+            initializeUsesAssignment(assignIt, assignIt);
         }
 
         Set<Integer> callsToInit = new HashSet<>();
@@ -269,18 +270,17 @@ public class Builder {
 
     private void initializeUsesAssignment(Node<ASTNode> assignNode, Node<ASTNode> child) {
         if (child.getData().getNodeType() == NodeType.ASSIGN) {
-            //child = child.getChildren().iterator().next();
-            //child = astTree->begin(child);
-            //++child;
+            Iterator<Node<ASTNode>> it = child.getChildren().iterator();
+            child = it.next();
+            if (it.hasNext()) {
+                child = it.next();
+            }
         }
         for (Node<ASTNode> node : child.getChildren()) {
             switch (node.getData().getNodeType()) {
                 case VARIABLE:
                     uses.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
                     uses.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME)); //(*uses)[(*assignment)->id].insert((*it)->getParam(Name));
-                    //TODO modifies put? jednak nie, bo za duzo wrzuca
-                    //modifies.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
-                    //modifies.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME));
                     break;
                 default:
                     initializeUsesAssignment(assignNode, node);
@@ -301,8 +301,10 @@ public class Builder {
                         initializeModifiesAndUsesContainers(stmtNode);
                     case ASSIGN:
                         modifies.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
-                        for (String s : modifies.get(stmtNode.getData().getId())) {
-                            modifies.get(container.getData().getId()).add(s); //(*modifies)[(*container)->id].insert((*modifies)[(*stmtIt)->id].begin(), (*modifies)[(*stmtIt)->id].end());
+                        if (modifies.get(stmtNode.getData().getId()) != null) { //TODO dorobić więcej ifów tego typu
+                            for (String s : modifies.get(stmtNode.getData().getId())) {
+                                modifies.get(container.getData().getId()).add(s); //(*modifies)[(*container)->id].insert((*modifies)[(*stmtIt)->id].begin(), (*modifies)[(*stmtIt)->id].end());
+                            }
                         }
                         uses.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
                         if (uses.get(stmtNode.getData().getId()) != null) { //TODO dorobić więcej ifów tego typu
