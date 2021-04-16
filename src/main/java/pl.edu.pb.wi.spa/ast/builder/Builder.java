@@ -15,7 +15,7 @@ public class Builder {
     private List<Node<ASTNode>> procedures;
     private List<Node<ASTNode>> whiles;
     private List<Node<ASTNode>> ifs;
-    private List<Node<ASTNode>> assigments;
+    private List<Node<ASTNode>> assignments;
     private Set<String> variables;
     private Set<String> constants;
     private List<Node<ASTNode>> callNodes;
@@ -53,7 +53,7 @@ public class Builder {
         procedures = new ArrayList<>();
         whiles = new ArrayList<>();
         ifs = new ArrayList<>();
-        assigments = new ArrayList<>();
+        assignments = new ArrayList<>();
         variables = new HashSet<>();
         constants = new HashSet<>();
         programLines = new ArrayList<>();
@@ -106,7 +106,7 @@ public class Builder {
                 procedures,
                 whiles,
                 ifs,
-                assigments,
+                assignments,
                 variables,
                 constants,
                 callNodes,
@@ -140,7 +140,7 @@ public class Builder {
                 ifs.add(node);
                 break;
             case ASSIGN:
-                assigments.add(node);
+                assignments.add(node);
                 break;
             case CONSTANT:
                 constantNodes.add(node);
@@ -167,6 +167,7 @@ public class Builder {
         return astTree.get(0);
     }
 
+    //TODO to tak naprawde budowa PKB
     public AST getAST() {
         List<Node<ASTNode>> list = getAstTreeAsList();
 
@@ -174,6 +175,7 @@ public class Builder {
         initializeCallMaps();
         tempUiVector = new ArrayList<>();
         initializeParentMap(list.get(0));
+        initializeModifiesAndUsesMaps();
 
         return null;
     }
@@ -238,6 +240,114 @@ public class Builder {
             }
             if (isContainerNode) {
                 tempUiVector.remove(tempUiVector.get(tempUiVector.size() - 1)); // tempUiVector.pop_back();
+
+            }
+        }
+    }
+
+    private void initializeModifiesAndUsesMaps() {
+        for (Node<ASTNode> assignNode : assignments) {
+            String variable = assignNode.getData().getParam(NodeParamType.NAME);
+            int nodeId = assignNode.getData().getId();
+            modifies.computeIfAbsent(nodeId, k -> new HashSet<>());
+            modifies.get(nodeId).add(variable);// (*modifies)[(**asgnIt)->id].insert(variable);
+            initializeUsesAssignment(assignNode, assignNode);
+        }
+
+        Set<Integer> callsToInit = new HashSet<>();
+        for (Node<ASTNode> procedureNode : procedures) {
+            initializeModifiesAndUsesContainers(procedureNode);
+        }
+        for (Node<ASTNode> callNode : callNodes) {
+            callsToInit.add(callNode.getData().getId());
+        }
+        while (!callsToInit.isEmpty())
+        {
+            initializeModifiesAndUsesCalls(ASTNode.getNodeById(callsToInit.iterator().next()), callsToInit);
+        }
+    }
+
+    private void initializeUsesAssignment(Node<ASTNode> assignNode, Node<ASTNode> child) {
+        if (child.getData().getNodeType() == NodeType.ASSIGN) {
+            //child = child.getChildren().iterator().next();
+            //child = astTree->begin(child);
+            //++child;
+        }
+        for (Node<ASTNode> node : child.getChildren()) {
+            switch (node.getData().getNodeType()) {
+                case VARIABLE:
+                    uses.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
+                    uses.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME)); //(*uses)[(*assignment)->id].insert((*it)->getParam(Name));
+                    //TODO modifies put? jednak nie, bo za duzo wrzuca
+                    //modifies.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
+                    //modifies.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME));
+                    break;
+                default:
+                    initializeUsesAssignment(assignNode, node);
+                    break;
+            }
+        }
+    }
+
+    private void initializeModifiesAndUsesContainers(Node<ASTNode> container) {
+        for (Node<ASTNode> stmtLstNode : container.getChildren()) {
+            for (Node<ASTNode> stmtNode : stmtLstNode.getChildren()) {
+                switch (stmtNode.getData().getNodeType()) {
+                    case WHILE:
+                    case IF:
+                        uses.computeIfAbsent(stmtNode.getData().getId(), k -> new HashSet<>());
+                        uses.get(stmtNode.getData().getId()).add(stmtNode.getData().getParam(NodeParamType.COND)); //(*uses)[(*stmtIt)->id].insert((*stmtIt)->getParam(Cond));
+                    case PROCEDURE:
+                        initializeModifiesAndUsesContainers(stmtNode);
+                    case ASSIGN:
+                        modifies.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
+                        for (String s : modifies.get(stmtNode.getData().getId())) {
+                            modifies.get(container.getData().getId()).add(s); //(*modifies)[(*container)->id].insert((*modifies)[(*stmtIt)->id].begin(), (*modifies)[(*stmtIt)->id].end());
+                        }
+                        uses.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
+                        if (uses.get(stmtNode.getData().getId()) != null) { //TODO dorobić więcej ifów tego typu
+                            for (String s : uses.get(stmtNode.getData().getId())) {
+                                uses.get(container.getData().getId()).add(s); //(*uses)[(*container)->id].insert((*uses)[(*stmtIt)->id].begin(), (*uses)[(*stmtIt)->id].end());
+                            }
+                        }
+                }
+            }
+        }
+    }
+
+    private void initializeModifiesAndUsesCalls(Node<ASTNode> call, Set<Integer> callsToInit) {
+        callsToInit.remove(call.getData().getId());
+        for (Node<ASTNode> callNode : callNodes) {
+            if (callsToInit.contains(callNode.getData().getId()) &&
+                    !callNode.getData().getParam(NodeParamType.CALLER).equals(call.getData().getParam(NodeParamType.CALLEE))) {
+                initializeModifiesAndUsesCalls(callNode, callsToInit);
+            }
+            int caleeProcId = ast.getProcedureByName(call.getData().getParam(NodeParamType.CALLEE)).getData().getId();
+            modifies.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
+            for (String s : modifies.get(caleeProcId)) {
+                modifies.get(call.getData().getId()).add(s); //(*modifies)[(*call)->id].insert((*modifies)[caleeProcId].begin(), (*modifies)[caleeProcId].end());
+            }
+            uses.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
+            for (String s : uses.get(caleeProcId)) {
+                uses.get(call.getData().getId()).add(s); //(*uses)[(*call)->id].insert((*uses)[caleeProcId].begin(), (*uses)[caleeProcId].end());
+            }
+
+            Node<ASTNode> node = call;
+            while (node.getData().getNodeType() != NodeType.PROCEDURE) {
+                do {
+                    node = node.getParent();
+                } while (node.getData().getNodeType() != NodeType.IF &&
+                            node.getData().getNodeType() != NodeType.WHILE &&
+                            node.getData().getNodeType() != NodeType.PROCEDURE);
+
+                modifies.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
+                for (String s : modifies.get(call.getData().getId())) {
+                    modifies.get(node.getData().getId()).add(s); //(*modifies)[(*node)->id].insert((*modifies)[(*call)->id].begin(), (*modifies)[(*call)->id].end());
+                }
+                uses.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
+                for (String s : uses.get(call.getData().getId())) {
+                    uses.get(node.getData().getId()).add(s); //(*uses)[(*node)->id].insert((*uses)[(*call)->id].begin(), (*uses)[(*call)->id].end());
+                }
 
             }
         }
