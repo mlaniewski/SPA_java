@@ -319,39 +319,37 @@ public class Builder {
 
     private void initializeModifiesAndUsesCalls(Node<ASTNode> call, Set<Integer> callsToInit) {
         callsToInit.remove(call.getData().getId());
-        for (Node<ASTNode> callNode : callNodes) {
-            if (callsToInit.contains(callNode.getData().getId()) &&
-                    !callNode.getData().getParam(NodeParamType.CALLER).equals(call.getData().getParam(NodeParamType.CALLEE))) {
-                initializeModifiesAndUsesCalls(callNode, callsToInit);
+        if (callsToInit.contains(call.getData().getId()) &&
+                !call.getData().getParam(NodeParamType.CALLER).equals(call.getData().getParam(NodeParamType.CALLEE))) {
+            initializeModifiesAndUsesCalls(call, callsToInit);
+        }
+        int caleeProcId = ast.getProcedureByName(call.getData().getParam(NodeParamType.CALLEE)).getData().getId();
+        modifies.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
+        for (String s : modifies.get(caleeProcId)) {
+            modifies.get(call.getData().getId()).add(s); //(*modifies)[(*call)->id].insert((*modifies)[caleeProcId].begin(), (*modifies)[caleeProcId].end());
+        }
+        uses.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
+        for (String s : uses.get(caleeProcId)) {
+            uses.get(call.getData().getId()).add(s); //(*uses)[(*call)->id].insert((*uses)[caleeProcId].begin(), (*uses)[caleeProcId].end());
+        }
+
+        Node<ASTNode> node = call;
+        while (node.getData().getNodeType() != NodeType.PROCEDURE) {
+            do {
+                node = node.getParent();
+            } while (node.getData().getNodeType() != NodeType.IF &&
+                        node.getData().getNodeType() != NodeType.WHILE &&
+                        node.getData().getNodeType() != NodeType.PROCEDURE);
+
+            modifies.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
+            for (String s : modifies.get(call.getData().getId())) {
+                modifies.get(node.getData().getId()).add(s); //(*modifies)[(*node)->id].insert((*modifies)[(*call)->id].begin(), (*modifies)[(*call)->id].end());
             }
-            int caleeProcId = ast.getProcedureByName(call.getData().getParam(NodeParamType.CALLEE)).getData().getId();
-            modifies.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
-            for (String s : modifies.get(caleeProcId)) {
-                modifies.get(call.getData().getId()).add(s); //(*modifies)[(*call)->id].insert((*modifies)[caleeProcId].begin(), (*modifies)[caleeProcId].end());
-            }
-            uses.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
-            for (String s : uses.get(caleeProcId)) {
-                uses.get(call.getData().getId()).add(s); //(*uses)[(*call)->id].insert((*uses)[caleeProcId].begin(), (*uses)[caleeProcId].end());
+            uses.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
+            for (String s : uses.get(call.getData().getId())) {
+                uses.get(node.getData().getId()).add(s); //(*uses)[(*node)->id].insert((*uses)[(*call)->id].begin(), (*uses)[(*call)->id].end());
             }
 
-            Node<ASTNode> node = call;
-            while (node.getData().getNodeType() != NodeType.PROCEDURE) {
-                do {
-                    node = node.getParent();
-                } while (node.getData().getNodeType() != NodeType.IF &&
-                            node.getData().getNodeType() != NodeType.WHILE &&
-                            node.getData().getNodeType() != NodeType.PROCEDURE);
-
-                modifies.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
-                for (String s : modifies.get(call.getData().getId())) {
-                    modifies.get(node.getData().getId()).add(s); //(*modifies)[(*node)->id].insert((*modifies)[(*call)->id].begin(), (*modifies)[(*call)->id].end());
-                }
-                uses.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
-                for (String s : uses.get(call.getData().getId())) {
-                    uses.get(node.getData().getId()).add(s); //(*uses)[(*node)->id].insert((*uses)[(*call)->id].begin(), (*uses)[(*call)->id].end());
-                }
-
-            }
         }
     }
 
