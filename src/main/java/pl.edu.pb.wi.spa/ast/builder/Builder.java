@@ -361,7 +361,7 @@ public class Builder {
     private void initializeNextStmtLst(Node<ASTNode> stmtLst, Node<ASTNode> next) {
         Iterator<Node<ASTNode>> it = stmtLst.getChildren().iterator();
         Node<ASTNode> prev = it.next();
-        Node<ASTNode> n = null;
+        Node<ASTNode> n;
         while (it.hasNext()) {
             n = it.next();
             initializeNext(prev, n);
@@ -419,7 +419,6 @@ public class Builder {
                 prevT.get(childChildNode.getData().getId()).add(prevId);
 
                 initializeNextStmtLst(childNode, prev);
-                break;
             case ASSIGN:
             case CALL:
                 if (next != null) {
