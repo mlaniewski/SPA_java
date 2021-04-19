@@ -176,6 +176,11 @@ public class Builder {
         tempUiVector = new ArrayList<>();
         initializeParentMap(list.get(0));
         initializeModifiesAndUsesMaps();
+        for (Node<ASTNode> procedure : procedures) {
+            Node<ASTNode> procedureChild = procedure.getChildren().iterator().next();
+            initializeNextStmtLst(procedureChild, null);
+        }
+
 
         return null;
     }
@@ -350,6 +355,85 @@ public class Builder {
                 uses.get(node.getData().getId()).add(s); //(*uses)[(*node)->id].insert((*uses)[(*call)->id].begin(), (*uses)[(*call)->id].end());
             }
 
+        }
+    }
+
+    private void initializeNextStmtLst(Node<ASTNode> stmtLst, Node<ASTNode> next) {
+        Iterator<Node<ASTNode>> it = stmtLst.getChildren().iterator();
+        Node<ASTNode> prev = it.next();
+        Node<ASTNode> n = null;
+        while (it.hasNext()) {
+            n = it.next();
+            initializeNext(prev, n);
+            prev = n;
+        }
+        initializeNext(prev, next);
+    }
+
+    private void initializeNext(Node<ASTNode> prev, Node<ASTNode> next) {
+        Node<ASTNode> childNode, childChildNode, prevNextChildNode, prevNextChildChildNode;
+        int prevId = prev.getData().getId();
+        switch (prev.getData().getNodeType()) {
+            case IF:
+                Iterator<Node<ASTNode>> prevIt = prev.getChildren().iterator();
+                childNode = prevIt.next();
+                childChildNode = childNode.getChildren().iterator().next();
+
+                nextN.computeIfAbsent(prevId, k -> new HashSet<>());
+                nextN.get(prevId).add(childChildNode.getData().getId());
+                nextT.computeIfAbsent(prevId, k -> new HashSet<>());
+                nextT.get(prevId).add(childChildNode.getData().getId());
+
+                prevN.computeIfAbsent(childChildNode.getData().getId(), k -> new HashSet<>());
+                prevN.get(childChildNode.getData().getId()).add(prevId);
+                prevT.computeIfAbsent(childChildNode.getData().getId(), k -> new HashSet<>());
+                prevT.get(childChildNode.getData().getId()).add(prevId);
+
+                prevNextChildNode = prevIt.next();
+                prevNextChildChildNode = prevNextChildNode.getChildren().iterator().next();
+                nextN.computeIfAbsent(prevId, k -> new HashSet<>());
+                nextN.get(prevId).add(prevNextChildChildNode.getData().getId());
+                nextT.computeIfAbsent(prevId, k -> new HashSet<>());
+                nextT.get(prevId).add(prevNextChildChildNode.getData().getId());
+
+                prevN.computeIfAbsent(prevNextChildChildNode.getData().getId(), k -> new HashSet<>());
+                prevN.get(prevNextChildChildNode.getData().getId()).add(prevId);
+                prevT.computeIfAbsent(prevNextChildChildNode.getData().getId(), k -> new HashSet<>());
+                prevT.get(prevNextChildChildNode.getData().getId()).add(prevId);
+
+                initializeNextStmtLst(childNode, next);
+                initializeNextStmtLst(prevNextChildNode, next);
+                break;
+            case WHILE:
+                childNode = prev.getChildren().iterator().next();
+                childChildNode = childNode.getChildren().iterator().next();
+
+                nextN.computeIfAbsent(prevId, k -> new HashSet<>());
+                nextN.get(prevId).add(childChildNode.getData().getId());
+                nextT.computeIfAbsent(prevId, k -> new HashSet<>());
+                nextT.get(prevId).add(childChildNode.getData().getId());
+
+                prevN.computeIfAbsent(childChildNode.getData().getId(), k -> new HashSet<>());
+                prevN.get(childChildNode.getData().getId()).add(prevId);
+                prevT.computeIfAbsent(childChildNode.getData().getId(), k -> new HashSet<>());
+                prevT.get(childChildNode.getData().getId()).add(prevId);
+
+                initializeNextStmtLst(childNode, prev);
+                break;
+            case ASSIGN:
+            case CALL:
+                if (next != null) {
+                    int nextId = next.getData().getId();
+                    nextN.computeIfAbsent(prevId, k -> new HashSet<>());
+                    nextN.get(prevId).add(nextId);
+                    nextT.computeIfAbsent(prevId, k -> new HashSet<>());
+                    nextT.get(prevId).add(nextId);
+
+                    prevN.computeIfAbsent(nextId, k -> new HashSet<>());
+                    prevN.get(nextId).add(prevId);
+                    prevT.computeIfAbsent(nextId, k -> new HashSet<>());
+                    prevT.get(nextId).add(prevId);
+                }
         }
     }
 
