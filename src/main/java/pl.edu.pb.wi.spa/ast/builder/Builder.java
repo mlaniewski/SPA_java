@@ -180,8 +180,15 @@ public class Builder {
             Node<ASTNode> procedureChild = procedure.getChildren().iterator().next();
             initializeNextStmtLst(procedureChild, null);
         }
+        initializeTransientRelation(nextT);
+        initializeTransientRelation(callersT);
+        initializeTransientRelation(calleesT);
+        initializeTransientRelation(childrenT);
+        initializeInvertedVariableRelation(modifies, modified);
+        initializeInvertedVariableRelation(uses, used);
+        initializeTransientRelation(prevT);
 
-
+        System.out.println();
         return null;
     }
 
@@ -434,6 +441,42 @@ public class Builder {
                     prevT.get(nextId).add(prevId);
                 }
         }
+    }
+
+    private void initializeTransientRelation(Map<Integer, Set<Integer>> relation) {
+        boolean finished = false;
+        while (!finished) {
+            finished = true;
+            Iterator<Integer> aIt = relation.keySet().iterator();
+            while (aIt.hasNext()) {
+                int a = aIt.next();
+                Iterator<Integer> bIt = relation.get(a).iterator();
+                Set<Integer> set = new HashSet<>(relation.get(a));
+                while (bIt.hasNext()) {
+                    int b = bIt.next();
+                    if (relation.get(b) != null) {
+                        Iterator<Integer> cIt = relation.get(b).iterator();
+                        while (cIt.hasNext()) {
+                            int c = cIt.next();
+                            if (set.add(c)) {
+                                finished = false;
+                            }
+                        }
+                    }
+                }
+                relation.put(a, set);
+            }
+        }
+    }
+
+    private void initializeInvertedVariableRelation(Map<Integer, Set<String>> rel,
+                                                    Map<String, Set<Integer>> inv) {
+        rel.forEach((id, set) -> {
+            set.forEach((val -> {
+                inv.computeIfAbsent(val, s -> new HashSet<>());
+                inv.get(val).add(id);
+            }));
+        });
     }
 
     private List<Node<ASTNode>> getAstTreeAsList() {

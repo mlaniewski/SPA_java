@@ -5,3 +5,5 @@
         Działające relacje modifies, uses, parent, parent*, call, calls*
     - spa_003
         Dodano relację Next i Next* w PKB
+    - spa_004
+        Dodano obsługę relacji z * w PKB
