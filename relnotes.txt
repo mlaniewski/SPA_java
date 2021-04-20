@@ -7,3 +7,5 @@
         Dodano relację Next i Next* w PKB
     - spa_004
         Dodano obsługę relacji z * w PKB
+    - spa_005
+        Dodano obsługę relacji pattern. Działający Design Extractor
