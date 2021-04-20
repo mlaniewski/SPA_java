@@ -61,10 +61,6 @@ public class AST {
                Map<Integer, Set<Integer>> prevT,
                Map<Integer, Set<String>> pattern,
                Map<Integer, String> fullPattern,
-               Map<Integer, Set<Integer>> affecting,
-               Map<Integer, Set<Integer>> affectingT,
-               Map<Integer, Set<Integer>> affected,
-               Map<Integer, Set<Integer>> affectedT,
                List<Node<ASTNode>> procedures,
                List<Node<ASTNode>> whiles,
                List<Node<ASTNode>> ifs,
@@ -91,10 +87,6 @@ public class AST {
         this.prevT = prevT;
         this.pattern = pattern;
         this.fullPattern = fullPattern;
-        this.affecting = affecting;
-        this.affectingT = affectingT;
-        this.affected = affected;
-        this.affectedT = affectedT;
         this.procedures = procedures;
         this.whiles = whiles;
         this.ifs = ifs;

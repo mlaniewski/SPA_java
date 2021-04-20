@@ -38,10 +38,6 @@ public class Builder {
     private Map<Integer, Set<Integer>> prevT;
     private Map<Integer, Set<String>> pattern;
     private Map<Integer, String> fullPattern;
-    private Map<Integer, Set<Integer>> affecting;
-    private Map<Integer, Set<Integer>> affectingT;
-    private Map<Integer, Set<Integer>> affected;
-    private Map<Integer, Set<Integer>> affectedT;
 
     private List<Node<ASTNode>> varNodes;
     private List<Node<ASTNode>> constantNodes;
@@ -76,10 +72,6 @@ public class Builder {
         pattern = new HashMap<>();
         fullPattern = new HashMap<>();
         callNodes = new ArrayList<>();
-        affecting = new HashMap<>();
-        affectingT = new HashMap<>();
-        affected = new HashMap<>();
-        affectedT = new HashMap<>();
         ast = new AST(
                 callers,
                 callersT,
@@ -99,10 +91,6 @@ public class Builder {
                 prevT,
                 pattern,
                 fullPattern,
-                affecting,
-                affectingT,
-                affected,
-                affectedT,
                 procedures,
                 whiles,
                 ifs,
@@ -196,7 +184,7 @@ public class Builder {
             constants.add(constantNode.getData().getParam(NodeParamType.NAME));
         }
 
-        return null;
+        return ast;
     }
 
     private void addLineNumbers(List<Node<ASTNode>> list) {
