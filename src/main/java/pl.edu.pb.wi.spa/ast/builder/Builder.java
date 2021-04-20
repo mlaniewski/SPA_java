@@ -187,8 +187,15 @@ public class Builder {
         initializeInvertedVariableRelation(modifies, modified);
         initializeInvertedVariableRelation(uses, used);
         initializeTransientRelation(prevT);
+        initializePattern();
 
-        System.out.println();
+        for (Node<ASTNode> varNode : varNodes) {
+            variables.add(varNode.getData().getParam(NodeParamType.NAME));
+        }
+        for (Node<ASTNode> constantNode : constantNodes) {
+            constants.add(constantNode.getData().getParam(NodeParamType.NAME));
+        }
+
         return null;
     }
 
@@ -441,6 +448,45 @@ public class Builder {
                     prevT.get(nextId).add(prevId);
                 }
         }
+    }
+
+    private void initializePattern() {
+        for (Node<ASTNode> assignment : assignments) {
+            Iterator<Node<ASTNode>> it = assignment.getChildren().iterator();
+            it.next(); //variable name
+            Node<ASTNode> exp = it.next();
+            Node<ASTNode> expDetails = exp.getChildren().iterator().next();
+            int assignmentId = assignment.getData().getId();
+            fullPattern.put(assignmentId, initializePatternNode(expDetails, assignmentId));
+        }
+    }
+
+    private String initializePatternNode(Node<ASTNode> exp, int id) {
+        ASTNode expData = exp.getData();
+        String val = expData.getParam(NodeParamType.NAME);
+        String result = "";
+
+        if (expData.getNodeType() == NodeType.VARIABLE || expData.getNodeType() == NodeType.CONSTANT) {
+            result = val;
+        } else {
+            Iterator<Node<ASTNode>> it = exp.getChildren().iterator();
+            for (int i = 0; i < 3; ++i) {
+                if (i == 1) {
+                    result += val;
+                    continue;
+                }
+                Node<ASTNode> elem = it.next();
+                String c = initializePatternNode(elem, id);
+                if (val.compareTo("*") == 0 && elem.getData().getParam(NodeParamType.NAME).compareTo("+") == 0) {
+                    c = "(" + c + ")";
+                }
+                result += c;
+            }
+        }
+
+        pattern.computeIfAbsent(id, s -> new HashSet<>());
+        pattern.get(id).add(result);
+        return result;
     }
 
     private void initializeTransientRelation(Map<Integer, Set<Integer>> relation) {
