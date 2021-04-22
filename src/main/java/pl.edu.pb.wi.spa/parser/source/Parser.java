@@ -1,4 +1,4 @@
-package pl.edu.pb.wi.spa.parser;
+package pl.edu.pb.wi.spa.parser.source;
 
 import pl.edu.pb.wi.spa.ast.builder.Builder;
 import pl.edu.pb.wi.spa.exception.ParserException;

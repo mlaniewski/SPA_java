@@ -28,10 +28,6 @@ public class AST {
     private Map<Integer, Set<Integer>> prevT;
     private Map<Integer, Set<String>> pattern;
     private Map<Integer, String> fullPattern;
-    private Map<Integer, Set<Integer>> affecting;
-    private Map<Integer, Set<Integer>> affectingT;
-    private Map<Integer, Set<Integer>> affected;
-    private Map<Integer, Set<Integer>> affectedT;
     //public ?
     private List<Node<ASTNode>> procedures;
     private List<Node<ASTNode>> whiles;
