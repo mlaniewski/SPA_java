@@ -9,3 +9,5 @@
         Dodano obsługę relacji z * w PKB
     - spa_005
         Dodano obsługę relacji pattern. Działający Design Extractor
+    - spa_006
+        Dodano QueryParsera
