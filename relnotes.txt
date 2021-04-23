@@ -11,3 +11,5 @@
         Dodano obsługę relacji pattern. Działający Design Extractor
     - spa_006
         Dodano QueryParsera
+    - spa_007
+        Dodano API do PKB, może nie działać prawidłowo, bo nie było testowane

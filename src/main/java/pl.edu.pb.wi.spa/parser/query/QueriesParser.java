@@ -6,6 +6,7 @@ import pl.edu.pb.wi.spa.common.Closure;
 import pl.edu.pb.wi.spa.common.Selector;
 import pl.edu.pb.wi.spa.common.Pattern;
 import pl.edu.pb.wi.spa.exception.QueryException;
+import pl.edu.pb.wi.spa.solver.Solver;
 import pl.edu.pb.wi.spa.tree.ASTNode;
 import pl.edu.pb.wi.spa.tree.Node;
 
@@ -286,11 +287,9 @@ public class QueriesParser {
                 throw new QueryException("Invalid query part: " + token);
             }
         }
-        //TODO
-        /*
-            Solver Solver(results, selector, closureTable, patternTable, predTable, withTable, ast);
-            Solver.evaluate();
-        */
+
+        Solver solver = new Solver(results, selector, closureTable, patternTable, predTable, withTable, ast);
+        solver.evaluate();
     }
 
     private boolean checkResultPartElement(String token) throws QueryException {

@@ -2,6 +2,7 @@ package pl.edu.pb.wi.spa.tree;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ASTNode {
     private static int nextId;
@@ -63,5 +64,19 @@ public class ASTNode {
                 ", nodeType=" + nodeType +
                 ", id=" + id +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ASTNode astNode = (ASTNode) o;
+        return nodeType == astNode.nodeType &&
+                Objects.equals(id, astNode.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodeType, id);
     }
 }
