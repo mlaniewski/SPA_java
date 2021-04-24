@@ -1,10 +1,10 @@
-procedure Pierwsza {
+procedure Circle {
 	t = 1;
 	a = t + 10;
 	d = t * a + 2;
-	call Trzecia;
+	call Triangle;
 	b = t + a;
-	call Czwarta;
+	call Hexagon;
 	b = t + a;
 	if t then {
 		k = a - d;
@@ -14,18 +14,18 @@ procedure Pierwsza {
 		a = d + t; }
 	else {
 		a = d + t;
-		call Czwarta;
+		call Hexagon;
 		c = c - 1; }
-	call Druga; }
+	call Rectangle; }
 
-procedure Druga {
+procedure Rectangle {
 	while c {
 		t = d + 3 * a + c;
-		call Trzecia;
+		call Triangle;
 		c = c + 20; }
 		d = t; }
 
-procedure Trzecia {
+procedure Triangle {
 	while d {
 		if t then {
 			d = t + 2; }
@@ -33,5 +33,5 @@ procedure Trzecia {
 			a = t * a + d + k * b; }}
 	c = t + k + d; }
 
-procedure Czwarta {
+procedure Hexagon {
 	t = a + t; }
