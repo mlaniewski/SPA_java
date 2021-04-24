@@ -23,4 +23,8 @@ public class Selector {
     public void setType(String type) {
         this.type = type;
     }
+
+    public List<String> getVariables() {
+        return variables;
+    }
 }

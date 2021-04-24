@@ -37,7 +37,7 @@ public class ASTNode {
         this.nodes.put(id, node);
     }
 
-    public static Node<ASTNode> getNodeById(int id) {
+    public static Node<ASTNode> getNodeById(Integer id) {
         return nodes.get(id);
     }
 

@@ -92,10 +92,44 @@ public class AST {
         this.programLines = programLines;
     }
 
-    private List<Node<ASTNode>> createNodeCollection(Iterator<Integer> it) {
+    public List<Node<ASTNode>> getProcedures() {
+        return procedures;
+    }
+
+    public List<Node<ASTNode>> getWhiles() {
+        return whiles;
+    }
+
+    public List<Node<ASTNode>> getIfs() {
+        return ifs;
+    }
+
+    public List<Node<ASTNode>> getAssigments() {
+        return assigments;
+    }
+
+    public Set<String> getVariables() {
+        return variables;
+    }
+
+    public Set<String> getConstants() {
+        return constants;
+    }
+
+    public List<Node<ASTNode>> getCallNodes() {
+        return callNodes;
+    }
+
+    public List<Node<ASTNode>> getProgramLines() {
+        return programLines;
+    }
+
+    private List<Node<ASTNode>> createNodeCollection(Set<Integer> set) {
         List<Node<ASTNode>> nodes = new ArrayList<>();
-        while (it.hasNext()) {
-            nodes.add(ASTNode.getNodeById(it.next()));
+        if (set != null) {
+            for (Integer val : set) {
+                nodes.add(ASTNode.getNodeById(val));
+            }
         }
         return nodes;
     }
@@ -146,7 +180,7 @@ public class AST {
     }
 
     //TODO sprawdzic
-    List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient) {
+    public List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient) {
         List<Node<ASTNode>> following = new ArrayList<>();
         Iterator<Node<ASTNode>> sIt = s1.getChildren().iterator();
         Node<ASTNode> end = s1.getParent().getChildren().get(s1.getParent().getChildren().size()-1);
@@ -155,6 +189,9 @@ public class AST {
         if (_transient) {
             while (!s.getData().equals(end.getData())) {
                 following.add(s);
+                if (!sIt.hasNext()) {
+                    break;
+                }
                 s = sIt.next();
             }
         } else {
@@ -207,12 +244,13 @@ public class AST {
             }
         } else {
             Set<Integer> idSet = parentT.get(s1Id);
-            for (Integer id : idSet) {
-                Node<ASTNode> p = ASTNode.getNodeById(id);
-                if (p != null) {
-                    parents.add(p);
+            if (idSet != null) {
+                for (Integer id : idSet) {
+                    Node<ASTNode> p = ASTNode.getNodeById(id);
+                    if (p != null) {
+                        parents.add(p);
+                    }
                 }
-
             }
         }
         return parents;
@@ -225,10 +263,11 @@ public class AST {
         Map<Integer, Set<Integer>> rel = _transient ? childrenT : children;
         Set<Integer> relSet = rel.get(s2Id);
 
-        for (Integer id : relSet) {
-            result.add(ASTNode.getNodeById(id));
+        if (relSet != null) {
+            for (Integer id : relSet) {
+                result.add(ASTNode.getNodeById(id));
+            }
         }
-
         return result;
     }
 
@@ -244,7 +283,7 @@ public class AST {
 
     public List<Node<ASTNode>> getUsing(String var) {
         Set<Integer> nodes = used.get(var);
-        return createNodeCollection(nodes.iterator());
+        return createNodeCollection(nodes);
     }
 
     public boolean checkModifies(Node<ASTNode> n, String var) {
@@ -259,7 +298,7 @@ public class AST {
 
     public List<Node<ASTNode>> getModifying(String var) {
         Set<Integer> nodes = modified.get(var);
-        return createNodeCollection(nodes.iterator());
+        return createNodeCollection(nodes);
     }
 
     public boolean checkCalls(Node<ASTNode> p1, Node<ASTNode> p2, boolean _transient) {
@@ -271,12 +310,12 @@ public class AST {
 
     public List<Node<ASTNode>> getCallees(Node<ASTNode> p1, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? callersT : callers;
-        return createNodeCollection(rel.get(p1.getData().getId()).iterator());
+        return createNodeCollection(rel.get(p1.getData().getId()));
     }
 
     public List<Node<ASTNode>> getCallers(Node<ASTNode> p2, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? calleesT : callees;
-        return createNodeCollection(rel.get(p2.getData().getId()).iterator());
+        return createNodeCollection(rel.get(p2.getData().getId()));
     }
 
     public boolean checkNext(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient) {
@@ -288,12 +327,12 @@ public class AST {
 
     public List<Node<ASTNode>> getNext(Node<ASTNode> s1, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? nextT : nextN;
-        return createNodeCollection(rel.get(s1.getData().getId()).iterator());
+        return createNodeCollection(rel.get(s1.getData().getId()));
     }
 
     public List<Node<ASTNode>> getPrev(Node<ASTNode> s2, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? prevT : prevN;
-        return createNodeCollection(rel.get(s2.getData().getId()).iterator());
+        return createNodeCollection(rel.get(s2.getData().getId()));
     }
 
     //TODO sprawdzić

@@ -1,14 +1,14 @@
 package pl.edu.pb.wi.spa.parser.query;
 
+import pl.edu.pb.wi.spa.ast.AST;
 import pl.edu.pb.wi.spa.common.Predicate;
 import pl.edu.pb.wi.spa.common.With;
 import pl.edu.pb.wi.spa.common.Closure;
 import pl.edu.pb.wi.spa.common.Selector;
 import pl.edu.pb.wi.spa.common.Pattern;
+import pl.edu.pb.wi.spa.exception.PKBException;
 import pl.edu.pb.wi.spa.exception.QueryException;
 import pl.edu.pb.wi.spa.solver.Solver;
-import pl.edu.pb.wi.spa.tree.ASTNode;
-import pl.edu.pb.wi.spa.tree.Node;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class QueriesParser {
-    private Node<ASTNode> ast;
+    private AST ast;
     private String query;
     private List<String> results;
 
@@ -26,13 +26,13 @@ public class QueriesParser {
     private List<With> withTable = new ArrayList<>();
     private List<Pattern> patternTable = new ArrayList<>();
 
-    public QueriesParser(Node<ASTNode> ast, String query, List<String> results) {
+    public QueriesParser(AST ast, String query, List<String> results) {
         this.ast = ast;
         this.query = query;
         this.results = results;
     }
 
-    public void parseQuery() throws QueryException {
+    public void parseQuery() throws QueryException, PKBException {
         List<String> tokens = Arrays.asList(query.split(";"));
         Iterator<String> tokenIt = tokens.iterator();
         while (tokenIt.hasNext()) {
@@ -104,7 +104,7 @@ public class QueriesParser {
         }
     }
 
-    private void parseResultPart(String resutPart) throws QueryException {
+    private void parseResultPart(String resutPart) throws QueryException, PKBException {
         resutPart = resutPart.trim();
         resutPart = resutPart.replace("(", " ( ");
         resutPart = resutPart.replace(")", " )");
@@ -311,8 +311,11 @@ public class QueriesParser {
         throw new QueryException("Invalid searching result element: " + token);
     }
 
-
     private boolean icompare(String s1, String s2) {
         return s1.toLowerCase().equals(s2);
+    }
+
+    public List<String> getResults() {
+        return results;
     }
 }

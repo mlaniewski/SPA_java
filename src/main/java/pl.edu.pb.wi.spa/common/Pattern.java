@@ -11,6 +11,18 @@ public class Pattern {
         this.rhs = rhs;
     }
 
+    public String getVarName() {
+        return varName;
+    }
+
+    public String getLhs() {
+        return lhs;
+    }
+
+    public String getRhs() {
+        return rhs;
+    }
+
     @Override
     public String toString() {
         return "Pattern{" +
