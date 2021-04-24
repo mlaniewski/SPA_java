@@ -77,7 +77,7 @@ public class Solver {
                 foundFalseResult = true;
                 break;
             }
-            if (cr.getResultType().equals("BOOL")) {
+            if (!cr.getResultType().equals("BOOL")) {
                 foundSetOrMap = true;
             }
         }
@@ -115,12 +115,16 @@ public class Solver {
         }
         for (String val : possibleValues.get(pred)) {
             boolean foundValue = true;
-            for (ClosureResult cr : dependentClosures.get(pred)) {
-                String depPred = cr.getP().equals(valueOfPred.get(pred)) ? cr.getP() : cr.getQ();
-                Map<String, Set<String>> map = cr.getP().equals(valueOfPred.get(pred)) ? cr.getQp() : cr.getPq();
-                if (map.get(val).contains(String.valueOf(tmpResult[indexOfPred.get(depPred)]))) {
-                    foundValue = false;
-                    break;
+            if (dependentClosures.get(pred) != null) {
+                for (ClosureResult cr : dependentClosures.get(pred)) {
+                    String depPred = cr.getP().equals(valueOfPred.get(pred)) ? cr.getP() : cr.getQ();
+                    Map<String, Set<String>> map = cr.getP().equals(valueOfPred.get(pred)) ? cr.getQp() : cr.getPq();
+                    if (map.get(val) != null) {
+                        if (map.get(val).contains(String.valueOf(tmpResult[indexOfPred.get(depPred)]))) {
+                            foundValue = false;
+                            break;
+                        }
+                    }
                 }
             }
             if (foundValue) {

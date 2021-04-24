@@ -2,7 +2,7 @@ package pl.edu.pb.wi.spa.common;
 
 public class Predicate {
     private String type = "";  // assign, string, constant, variable, prog_line, procedure, stmt#, any
-    private String value;
+    private String value = "";
 
     public Predicate() { }
 

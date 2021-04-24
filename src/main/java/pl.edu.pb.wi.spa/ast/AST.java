@@ -179,11 +179,12 @@ public class AST {
         }
     }
 
-    //TODO sprawdzic
     public List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient) {
         List<Node<ASTNode>> following = new ArrayList<>();
-        Iterator<Node<ASTNode>> sIt = s1.getChildren().iterator();
-        Node<ASTNode> end = s1.getParent().getChildren().get(s1.getParent().getChildren().size()-1);
+        List<Node<ASTNode>> s1Childs = s1.getParent().getChildren();
+        int s1Index = s1Childs.indexOf(s1);
+        Iterator<Node<ASTNode>> sIt = s1Childs.subList(s1Index + 1, s1Childs.size() - 1).iterator();
+        Node<ASTNode> end = s1.getParent();
 
         Node<ASTNode> s = sIt.next();
         if (_transient) {
@@ -202,17 +203,18 @@ public class AST {
         return following;
     }
 
-    //TODO sprawdzic
     public List<Node<ASTNode>> getFollowed(Node<ASTNode> s2, boolean _transient) {
         List<Node<ASTNode>> followed = new ArrayList<>();
-        Node<ASTNode> end = s2.getChildren().iterator().next();
+        Node<ASTNode> end = s2;
         Iterator<Node<ASTNode>> sIt = s2.getParent().getChildren().iterator();
 
         Node<ASTNode> s = sIt.next();
         while (!s.getData().equals(end.getData())) {
             if (_transient) {
                 followed.add(s);
-                s = sIt.next();
+                if (sIt.hasNext()) {
+                    s = sIt.next();
+                }
             } else {
                 Node<ASTNode> prev = s;
                 s = sIt.next();
@@ -278,6 +280,9 @@ public class AST {
 
     public List<String> getUsed(Node<ASTNode> n) {
         Set<String> vars = uses.get(n.getData().getId());
+        if (vars == null) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>(vars);
     }
 

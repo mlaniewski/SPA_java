@@ -517,14 +517,7 @@ public class Builder {
         List<Node<ASTNode>> list = new ArrayList<>();
         Node<ASTNode> astTree = getAstTree();
         list.add(astTree);
-        getNextNode(astTree.getChildren().get(0), list);
+        list.addAll(astTree.getChildren());
         return list;
-    }
-
-    private void getNextNode(Node<ASTNode> node, List<Node<ASTNode>> list) {
-        list.add(node);
-        for (Node<ASTNode> astNode : node.getChildren()) {
-            getNextNode(astNode, list);
-        }
     }
 }

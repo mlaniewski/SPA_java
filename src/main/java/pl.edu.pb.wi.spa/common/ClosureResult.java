@@ -8,8 +8,8 @@ import java.util.Set;
 public class ClosureResult {
     private String resultType; // BOOL, SET, MAP
     private boolean boolResult;
-    private String p; //predicate
-    private String q; //next predicate?
+    private String p = ""; //predicate
+    private String q = ""; //next predicate?
     private Set<String> vals = new HashSet<>();
     private Map<String, Set<String>> pq = new HashMap<>();
     private Map<String, Set<String>> qp = new HashMap<>();

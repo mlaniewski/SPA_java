@@ -49,6 +49,7 @@ public class SPA {
                         System.out.print(", ");
                     }
                 }
+                System.out.println();
             }
         }
 

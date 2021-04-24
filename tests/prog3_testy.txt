@@ -1,0 +1,63 @@
+if ifs;
+Select ifs such that Follows(7, ifs)
+8
+assign a;
+Select a such that Follows(2, a)
+3
+assign a;
+Select a such that Follows(a, 2)
+1
+assign a;
+Select a such that Follows*(1, a)
+2, 3, 5, 7
+stmt s;
+Select s such that Parent(8, s)
+13, 14, 15, 16, 9, 10
+stmt s;
+Select s such that Parent(2, s)
+none
+stmt s;
+Select s such that Parent*(s, 10)
+8
+stmt s;
+Select s such that Parent*(s, 11)
+8, 10
+stmt s; while w;
+Select w such that Parent*(s, 10)
+10, 18, 23 //zwraca none, a powinno byc tak jak po lewej
+while w;
+Select w such that Parent*(w, 21)
+18
+while w;
+Select w such that Parent*(w, 13)
+none
+while w;
+Select w such that Parent*(w, 11)
+10
+
+Select BOOLEAN such that Parent*(10, 11)
+true
+variable v;
+Select v such that Modifies(18, v)
+a, c, t, d
+while w;
+Select w such that Modifies(w, "d")
+23, 18, 10
+while w;
+Select w such that Modifies(w, "c")
+18, 10
+variable v;
+Select v such that Modifies("Czwarta", v)
+t
+variable v;
+Select v such that Modifies("Druga", v)
+a, c, t, d
+stmt s;
+Select s such that Uses(s, "d")
+11, 23, 12, 24, 13, 14, 26, 27, 17, 18, 19, 4, 8, 9, 20, 10
+variable v;
+Select v such that Uses(23, v)
+a, b, d, t, k
+assign a; variable v;
+Select v such that Uses(a, v)
+a, b, c, d, t, k
