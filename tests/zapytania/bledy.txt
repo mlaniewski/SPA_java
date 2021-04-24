@@ -1,0 +1,79 @@
+stmt s; while w;
+Select w such that Parent*(s, 10)
+10,18,23 => moje zwraca none
+stmt s; while w;
+Select w such that Parent*(s, 11)
+10,18,23 => moje zwraca none
+stmt s; while w;
+Select w such that Parent*(s, 20)
+10,18,23 => moje zwraca none
+while w; stmt s;
+Select w such that Follows*(s, w)
+10 => exception
+while w; stmt s;
+Select w such that Follows*(w, s)
+10,18,23 => exception
+assign a;
+Select a such that Modifies(a, "a") and Uses(a, "a")
+26 => moje zwraca 2, 13, 14, 26
+assign a;
+Select a such that Modifies(a, "d") and Uses(a, "d")
+11 => moje zwraca 22, 11, 3, 25
+assign a;
+Select a such that Modifies(a, "b") and Uses(a, "b")
+none => moje zwraca 5, 7
+assign a;
+Select a such that Modifies(a, "c") and Uses(a, "c")
+16,21 => moje zwraca 12, 27, 16, 21
+while w; assign a;
+Select a such that Modifies(a, "t") and Parent(w, a)
+19 => moje zwraca 1, 28, 19
+while w, assign a;
+Select a such that Parent(w, a) and Modifies(a, "t")
+19 => zwraca none
+while w; assign a;
+Select a such that Modifies(a, "t") such that Parent(w, a)
+19 => moje zwraca 1, 28, 19
+procedure p;
+Select p such that Calls("Circle", p) and Modifies(p, "c") and Uses(p, "a")
+Rectangle,Triangle => moje zwraca Hexagon, Triangle, Rectangle
+procedure p;
+Select p such that Calls*("Circle", p) and Modifies(p, "c")
+Rectangle,Triangle => moje zwraca Hexagon, Triangle, Rectangle
+assign a;
+Select a pattern a("d", _)
+11,22,25,3 => StringIndexOutOfBoundsException
+while w; assign a;
+Select a pattern a("a", _) such that Follows(w, a)
+13 => moje zwraca NoSuchElementException
+assign a;
+Select a pattern a(_, "d+1")
+12 => moje zwraca none
+assign a;
+Select a pattern a(_, _"t*a+d"_)
+26 => moje zwraca 3, 26
+assign a;
+Select a pattern a(_, _"d+t"_)
+11,13,14 => moje zwraca 11, 12, 13, 14, 26, 27, 19, 9
+assign a;
+Select a pattern a(_, _"k+d"_)
+none => moje zwraca 26, 27
+assign a;
+Select a pattern a(_, _"d+3"_)
+none => moje zwraca 11, 12, 13, 14, 26, 27, 19, 9
+assign a;
+Select a pattern a(_, _"d+3*a"_)
+19 => moje zwraca none
+assign a;
+Select a pattern a(_, _"d+1"_)
+12 => moje zwraca 11, 12, 13, 14, 26, 27, 19, 9
+if ifstat; constant co;
+Select BOOLEAN pattern ifstat("t", _,_) with co.value = 2
+true => moje zwraca StringIndexOutOfBoundsException
+prog_line n2;
+Select BOOLEAN such that Next(17, 18)
+false => moje zwraca NPE
+prog_line n2;
+Select BOOLEAN such that Next*(12, 12)
+false => moje zwraca true
+

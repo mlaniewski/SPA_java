@@ -1,11 +1,11 @@
 package pl.edu.pb.wi.spa.common;
 
 public class With {
-    private String operand;
-    private String lhsVarName;
-    private String lhsPropertyName;
-    private String rhsVarName;
-    private String rhsPropertyName;
+    private String operand = "";
+    private String lhsVarName = "";
+    private String lhsPropertyName = "";
+    private String rhsVarName = "";
+    private String rhsPropertyName = "";
     private boolean rhsIsProperty;
     private boolean lhsIsProperty;
 

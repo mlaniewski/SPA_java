@@ -113,6 +113,9 @@ public class Solver {
         if (pred >= possibleValues.size()) { // to jest do wywalenia jak beda juz ClosureResult zrobione
             return;
         }
+        if (possibleValues.get(pred) == null) {
+            return;
+        }
         for (String val : possibleValues.get(pred)) {
             boolean foundValue = true;
             if (dependentClosures.get(pred) != null) {
