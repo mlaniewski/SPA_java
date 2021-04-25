@@ -186,18 +186,20 @@ public class AST {
         Iterator<Node<ASTNode>> sIt = s1Childs.subList(s1Index + 1, s1Childs.size() - 1).iterator();
         Node<ASTNode> end = s1.getParent();
 
-        Node<ASTNode> s = sIt.next();
-        if (_transient) {
-            while (!s.getData().equals(end.getData())) {
-                following.add(s);
-                if (!sIt.hasNext()) {
-                    break;
+        if (sIt.hasNext()) {
+            Node<ASTNode> s = sIt.next();
+            if (_transient) {
+                while (!s.getData().equals(end.getData())) {
+                    following.add(s);
+                    if (!sIt.hasNext()) {
+                        break;
+                    }
+                    s = sIt.next();
                 }
-                s = sIt.next();
-            }
-        } else {
-            if (!s.getData().equals(end.getData())) {
-                following.add(s);
+            } else {
+                if (!s.getData().equals(end.getData())) {
+                    following.add(s);
+                }
             }
         }
         return following;
@@ -327,6 +329,9 @@ public class AST {
         Map<Integer, Set<Integer>> rel = _transient ? nextT : nextN;
         int s1Id = s1.getData().getId();
         int s2Id = s2.getData().getId();
+        if (rel.get(s1Id) == null) {
+            return false;
+        }
         return rel.get(s1Id).contains(s2Id);
     }
 
@@ -344,7 +349,7 @@ public class AST {
     public List<Node<ASTNode>> getPattern(String var, String expr) {
         List<Node<ASTNode>> result = new ArrayList<>();
         if (!var.equals("_")) {
-            var  = var.substring(1, var.length() - 2);
+            var  = var.substring(1, var.length() - 1);
         }
         if (expr.equals("_")) {
             if (var.equals("_")) {
@@ -357,7 +362,7 @@ public class AST {
                 }
             }
         }
-        if (expr.charAt(0) == '_') {
+        else if (expr.charAt(0) == '_') {
             String p = expr.substring(2, expr.length() - 2);
             String finalVar = var;
             pattern.forEach((first, second) -> {
