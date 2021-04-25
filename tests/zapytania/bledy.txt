@@ -46,27 +46,6 @@ Select a pattern a("d", _)
 while w; assign a;
 Select a pattern a("a", _) such that Follows(w, a)
 13 => moje zwraca NoSuchElementException => c++ zwraca 13
-assign a;
-Select a pattern a(_, "d+1")
-12 => moje zwraca none => c++ zwraca 12
-assign a;
-Select a pattern a(_, _"t*a+d"_)
-26 => moje zwraca 3, 26 => c++ zwraca 26
-assign a;
-Select a pattern a(_, _"d+t"_)
-11,13,14 => moje zwraca 11, 12, 13, 14, 26, 27, 19, 9 => c++ zwraca 11, 13, 14
-assign a;
-Select a pattern a(_, _"k+d"_)
-none => moje zwraca 26, 27 => c++ zwraca none
-assign a;
-Select a pattern a(_, _"d+3"_)
-none => moje zwraca 11, 12, 13, 14, 26, 27, 19, 9 => c++ zwraca none
-assign a;
-Select a pattern a(_, _"d+3*a"_)
-19 => moje zwraca none => c++ zwraca 19
-assign a;
-Select a pattern a(_, _"d+1"_)
-12 => moje zwraca 11, 12, 13, 14, 26, 27, 19, 9 => c++ zwraca 12
 if ifstat; constant co;
 Select BOOLEAN pattern ifstat("t", _,_) with co.value = 2
 true => moje zwraca StringIndexOutOfBoundsException => c++ zwraca false

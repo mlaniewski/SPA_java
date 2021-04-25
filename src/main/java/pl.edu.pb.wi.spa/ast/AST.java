@@ -358,7 +358,7 @@ public class AST {
             }
         }
         if (expr.charAt(0) == '_') {
-            String p = expr.substring(2, expr.length() - 4);
+            String p = expr.substring(2, expr.length() - 2);
             String finalVar = var;
             pattern.forEach((first, second) -> {
                 Node<ASTNode> node = ASTNode.getNodeById(first);
@@ -373,7 +373,7 @@ public class AST {
                 }
             });
         } else {
-            String p = expr.substring(1, expr.length() - 2);
+            String p = expr.substring(1, expr.length() - 1);
             String finalVar = var;
             fullPattern.forEach((first, second) -> {
                 Node<ASTNode> node = ASTNode.getNodeById(first);
