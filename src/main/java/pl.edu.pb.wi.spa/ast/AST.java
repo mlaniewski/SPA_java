@@ -182,24 +182,21 @@ public class AST {
     public List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient) {
         List<Node<ASTNode>> following = new ArrayList<>();
         List<Node<ASTNode>> s1Childs = s1.getParent().getChildren();
-        int s1Index = s1Childs.indexOf(s1);
-        Iterator<Node<ASTNode>> sIt = s1Childs.subList(s1Index + 1, s1Childs.size() - 1).iterator();
-        Node<ASTNode> end = s1.getParent();
+        Iterator<Node<ASTNode>> sIt = s1Childs.iterator();
+        Node<ASTNode> end = s1Childs.get(s1Childs.size() - 1);
 
-        if (sIt.hasNext()) {
-            Node<ASTNode> s = sIt.next();
-            if (_transient) {
-                while (!s.getData().equals(end.getData())) {
-                    following.add(s);
-                    if (!sIt.hasNext()) {
-                        break;
-                    }
-                    s = sIt.next();
+        Node<ASTNode> s = sIt.next();
+        if (_transient) {
+            while (!s.getData().equals(end.getData())) {
+                following.add(s);
+                if (!sIt.hasNext()) {
+                    break;
                 }
-            } else {
-                if (!s.getData().equals(end.getData())) {
-                    following.add(s);
-                }
+                s = sIt.next();
+            }
+        } else {
+            if (!s.getData().equals(end.getData())) {
+                following.add(s);
             }
         }
         return following;

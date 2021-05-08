@@ -114,7 +114,7 @@ public class Solver {
             return;
         }
         if (possibleValues.get(pred) == null) {
-            return;
+            return; //TODO a moze findResult(pred+1);
         }
         for (String val : possibleValues.get(pred)) {
             boolean foundValue = true;
@@ -191,6 +191,8 @@ public class Solver {
                     intersection.add(el);
                 }
             }
+            possibleValues.remove(pred);
+            possibleValues.put(pred, intersection);
         }
         else {
             possibleValues.computeIfAbsent(pred, k -> new HashSet<>());
