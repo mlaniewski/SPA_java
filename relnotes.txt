@@ -13,3 +13,5 @@
         Dodano QueryParsera
     - spa_007
         Dodano API do PKB, może nie działać prawidłowo, bo nie było testowane
+    - spa_008
+        Przetestowano drugi raz, 100/109 prawidłowych, 5/109, w ktorych cpp i Java zwracaja bledna odpowiedz
