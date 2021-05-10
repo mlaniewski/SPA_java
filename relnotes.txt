@@ -15,3 +15,5 @@
         Dodano API do PKB, może nie działać prawidłowo, bo nie było testowane
     - spa_008
         Przetestowano drugi raz, 100/109 prawidłowych, 5/109, w ktorych cpp i Java zwracaja bledna odpowiedz
+    - spa_009
+        Dobra wersja => przepisane 1:1 z kodu cpp, 104/109 prawidłowych

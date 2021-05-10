@@ -364,7 +364,7 @@ public class AST {
             if (expr.length() < 4) {
                 p = expr.substring(2);
             } else {
-                 p = expr.substring(2, expr.length() - 4);
+                 p = expr.substring(2, expr.length() - 2);
             }
             String finalVar = var;
             pattern.forEach((first, second) -> {

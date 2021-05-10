@@ -19,3 +19,10 @@ Select a such that Parent(w, a) and Modifies(a, "t")
 if ifstat; constant co;
 Select BOOLEAN pattern ifstat("t", _,_) with co.value = 2
 true => false => c++ zwraca false
+
+assign a;
+Select a pattern a(_, _"t*a+d"_)
+26 => 3, 26
+assign a;
+Select a pattern a(_, _"d+t"_)
+11,13,14 => 11, 12, 13, 14, 26, 27, 19, 9
