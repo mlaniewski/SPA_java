@@ -360,7 +360,12 @@ public class AST {
             }
         }
         else if (expr.charAt(0) == '_') {
-            String p = expr.substring(2, expr.length() - 2);
+            String p;
+            if (expr.length() < 4) {
+                p = expr.substring(2);
+            } else {
+                 p = expr.substring(2, expr.length() - 4);
+            }
             String finalVar = var;
             pattern.forEach((first, second) -> {
                 Node<ASTNode> node = ASTNode.getNodeById(first);

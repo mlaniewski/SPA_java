@@ -120,10 +120,10 @@ public class Solver {
             boolean foundValue = true;
             if (dependentClosures.get(pred) != null) {
                 for (ClosureResult cr : dependentClosures.get(pred)) {
-                    String depPred = cr.getP().equals(valueOfPred.get(pred)) ? cr.getP() : cr.getQ();
-                    Map<String, Set<String>> map = cr.getP().equals(valueOfPred.get(pred)) ? cr.getQp() : cr.getPq();
+                    String depPred = !cr.getP().equals(valueOfPred.get(pred)) ? cr.getP() : cr.getQ();
+                    Map<String, Set<String>> map = !cr.getP().equals(valueOfPred.get(pred)) ? cr.getQp() : cr.getPq();
                     if (map.get(val) != null) {
-                        if (map.get(val).contains(String.valueOf(tmpResult[indexOfPred.get(depPred)]))) {
+                        if (!map.get(val).contains(String.valueOf(tmpResult[indexOfPred.get(depPred)]))) {
                             foundValue = false;
                             break;
                         }
