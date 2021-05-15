@@ -1,4 +1,4 @@
-package pl.edu.pb.wi.spa.parser.source;
+package pl.edu.pb.wi.spa.frontend.parser;
 
 import pl.edu.pb.wi.spa.ast.builder.Builder;
 import pl.edu.pb.wi.spa.exception.ParserException;
@@ -14,16 +14,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
-public class Parser {
+public class ParserImpl implements Parser {
     private Iterator<String> tokens;
     private String token;
     private Builder builder;
     private String procName;
 
-    public Parser(Builder builder) {
+    public ParserImpl(Builder builder) {
         this.builder = builder;
     }
 
+    @Override
     public void parse(String filename) {
         try {
             tokens = createTokenList(filename).iterator();

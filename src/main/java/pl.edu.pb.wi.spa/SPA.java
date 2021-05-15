@@ -4,8 +4,9 @@ import pl.edu.pb.wi.spa.ast.AST;
 import pl.edu.pb.wi.spa.ast.builder.Builder;
 import pl.edu.pb.wi.spa.exception.PKBException;
 import pl.edu.pb.wi.spa.exception.QueryException;
+import pl.edu.pb.wi.spa.frontend.parser.Parser;
+import pl.edu.pb.wi.spa.frontend.parser.ParserImpl;
 import pl.edu.pb.wi.spa.parser.query.QueriesParser;
-import pl.edu.pb.wi.spa.parser.source.Parser;
 import pl.edu.pb.wi.spa.tree.ASTNode;
 import pl.edu.pb.wi.spa.tree.Node;
 
@@ -18,7 +19,7 @@ public class SPA {
     public static void main(String[] args) throws QueryException, PKBException {
         final String sourceFile = "tests/iteracja1/prog3.simple";
         Builder builder = new Builder();
-        Parser parser = new Parser(builder);
+        Parser parser = new ParserImpl(builder);
 
         parser.parse(sourceFile);
 
