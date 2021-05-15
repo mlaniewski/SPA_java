@@ -1,11 +1,11 @@
-package pl.edu.pb.wi.spa.frontend.parser;
+package spa.source.parser;
 
-import pl.edu.pb.wi.spa.common.AST;
-import pl.edu.pb.wi.spa.exception.ParserException;
-import pl.edu.pb.wi.spa.tree.ASTNode;
-import pl.edu.pb.wi.spa.tree.Node;
-import pl.edu.pb.wi.spa.tree.NodeParamType;
-import pl.edu.pb.wi.spa.tree.NodeType;
+import spa.common.AST;
+import spa.exception.ParserException;
+import spa.tree.ASTNode;
+import spa.tree.Node;
+import spa.tree.NodeParamType;
+import spa.tree.NodeType;
 
 import java.io.File;
 import java.io.FileNotFoundException;

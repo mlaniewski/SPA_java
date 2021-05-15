@@ -1,63 +1,58 @@
-package pl.edu.pb.wi.spa.solver;
+package spa.query.evaluator;
 
-import pl.edu.pb.wi.spa.common.Predicate;
-import pl.edu.pb.wi.spa.common.With;
-import pl.edu.pb.wi.spa.common.Closure;
-import pl.edu.pb.wi.spa.common.Selector;
-import pl.edu.pb.wi.spa.common.Pattern;
-import pl.edu.pb.wi.spa.common.ClosureResult;
-import pl.edu.pb.wi.spa.exception.PKBException;
-import pl.edu.pb.wi.spa.pkb.PKB;
-import pl.edu.pb.wi.spa.tree.ASTNode;
-import pl.edu.pb.wi.spa.tree.Node;
-import pl.edu.pb.wi.spa.tree.NodeParamType;
-import pl.edu.pb.wi.spa.tree.NodeType;
+import spa.common.*;
+import spa.exception.PKBException;
+import spa.pkb.PKB;
+import spa.query.parser.QueryTree;
+import spa.tree.ASTNode;
+import spa.tree.Node;
+import spa.tree.NodeParamType;
+import spa.tree.NodeType;
 
 import java.util.*;
 
-public class Solver {
+public class QueryEvaluator {
     private List<String> results;
-    private Selector selector;
-    private List<Closure> closureTable;
-    private List<Pattern> patternTable;
-    private List<Predicate> predTable;
-    private List<With> withTable;
+    private QueryTree queryTree;
     private PKB pkb;
 
     private boolean boolResult;
-    private String[] tmpResult = new String[1000]; //TODO to jest podejrzane
-    private List<String> valueOfPred = new ArrayList<>();
-    private Map<String, Integer> indexOfPred = new HashMap<>();
-    private List<ClosureResult> closureResults = new ArrayList<>();
-    private Map<Integer, List<ClosureResult>> dependentClosures = new HashMap<>();
-    private Map<Integer, Set<String>> possibleValues = new HashMap<>();
-    private List<List<String>> resultTable = new LinkedList<>();
+    private String[] tmpResult;
+    private List<String> valueOfPred;
+    private Map<String, Integer> indexOfPred;
+    private List<ClosureResult> closureResults;
+    private Map<Integer, List<ClosureResult>> dependentClosures;
+    private Map<Integer, Set<String>> possibleValues;
+    private List<List<String>> resultTable;
 
-    public Solver(List<String> results, Selector selector, List<Closure> closureTable, List<Pattern> patternTable, List<Predicate> predTable, List<With> withTable, PKB pkb) throws PKBException {
-        this.results = results;
-        this.selector = selector;
-        this.closureTable = closureTable;
-        this.patternTable = patternTable;
-        this.predTable = predTable;
-        this.withTable = withTable;
+    public QueryEvaluator(QueryTree queryTree, PKB pkb) throws PKBException {
+        this.queryTree = queryTree;
         this.pkb = pkb;
+        this.results = new ArrayList<>();
+        this.tmpResult = new String[1000];
+        this.valueOfPred = new ArrayList<>();
+        this.indexOfPred = new HashMap<>();
+        this.closureResults = new ArrayList<>();
+        this.dependentClosures = new HashMap<>();
+        this.possibleValues = new HashMap<>();
+        this.resultTable = new LinkedList<>();
 
         int i = 0;
-        for (Predicate predicate : predTable) {
+        for (Predicate predicate : queryTree.getPredTable()) {
             valueOfPred.add(predicate.getValue());
             indexOfPred.put(predicate.getValue(), i++);
         }
-        for (Closure closure : closureTable) {
+        for (Closure closure : queryTree.getClosureTable()) {
             ClosureResult result = getClosureResult(closure);
             if (result.getResultType().equals("MAP") && result.getPq().isEmpty()) {
                 continue;
             }
             closureResults.add(result);
         }
-        for (Pattern pattern : patternTable) {
+        for (Pattern pattern : queryTree.getPatternTable()) {
             closureResults.add(getPatternResult(pattern));
         }
-        for (With with : withTable) {
+        for (With with : queryTree.getWithTable()) {
             closureResults.add(getWithResult(with));
         }
         for (ClosureResult cr : closureResults) {
@@ -91,20 +86,18 @@ public class Solver {
             }
         }
 
-        if (selector.getType().equals("boolean")) {
+        if (queryTree.getSelector().getType().equals("boolean")) {
             if (resultTable.isEmpty() && !boolResult) {
                 results.add("false");
             } else {
                 results.add("true");
             }
-        } else if (selector.getType().equals("variable")) {
+        } else if (queryTree.getSelector().getType().equals("variable")) {
             Set<String> res = new HashSet<>();
             for (List<String> it : resultTable) {
-                res.add(it.get(indexOfPred.get(selector.getVariables().get(0))));
+                res.add(it.get(indexOfPred.get(queryTree.getSelector().getVariables().get(0))));
             }
             results.addAll(res);
-        } else if (selector.getType().equals("tuple")) { //TODO robimy tuple czy nie?
-
         }
     }
 
@@ -132,11 +125,11 @@ public class Solver {
             }
             if (foundValue) {
                 tmpResult[pred] = val;
-                if (pred < predTable.size() - 1) {
+                if (pred < queryTree.getPredTable().size() - 1) {
                     findResult(pred + 1);
                 } else {
                     List<String> result = new ArrayList<>();
-                    for (int i = 0; i < predTable.size(); i++) {
+                    for (int i = 0; i < queryTree.getPredTable().size(); i++) {
                         result.add(tmpResult[i]);
                     }
                     resultTable.add(result);
@@ -151,7 +144,7 @@ public class Solver {
 
         if (closureResults.isEmpty()) {
             int i = 0;
-            for (Predicate pred : predTable) {
+            for (Predicate pred : queryTree.getPredTable()) {
                 List<Node<ASTNode>> allVals = pkb.getAllValues(pred.getType());
                 for (Node<ASTNode> val : allVals) {
                     possibleValues.computeIfAbsent(i, k -> new HashSet<>());
@@ -207,7 +200,7 @@ public class Solver {
 
         Predicate p1 = new Predicate();
         Predicate p2 = new Predicate();
-        for (Predicate predicate : predTable) {
+        for (Predicate predicate : queryTree.getPredTable()) {
             if (closure.getLhs().equals(predicate.getValue())) {
                 p1 = predicate;
             } else if (closure.getRhs().equals(predicate.getValue())) {
@@ -789,5 +782,9 @@ public class Solver {
             return nodeType == NodeType.CONSTANT;
         }
         return false;
+    }
+
+    public List<String> getResults() {
+        return results;
     }
 }
