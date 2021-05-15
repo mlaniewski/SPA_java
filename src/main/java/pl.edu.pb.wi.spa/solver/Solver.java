@@ -1,6 +1,5 @@
 package pl.edu.pb.wi.spa.solver;
 
-import pl.edu.pb.wi.spa.ast.AST;
 import pl.edu.pb.wi.spa.common.Predicate;
 import pl.edu.pb.wi.spa.common.With;
 import pl.edu.pb.wi.spa.common.Closure;
@@ -8,6 +7,7 @@ import pl.edu.pb.wi.spa.common.Selector;
 import pl.edu.pb.wi.spa.common.Pattern;
 import pl.edu.pb.wi.spa.common.ClosureResult;
 import pl.edu.pb.wi.spa.exception.PKBException;
+import pl.edu.pb.wi.spa.pkb.PKB;
 import pl.edu.pb.wi.spa.tree.ASTNode;
 import pl.edu.pb.wi.spa.tree.Node;
 import pl.edu.pb.wi.spa.tree.NodeParamType;
@@ -22,7 +22,7 @@ public class Solver {
     private List<Pattern> patternTable;
     private List<Predicate> predTable;
     private List<With> withTable;
-    private AST ast;
+    private PKB pkb;
 
     private boolean boolResult;
     private String[] tmpResult = new String[1000]; //TODO to jest podejrzane
@@ -33,14 +33,14 @@ public class Solver {
     private Map<Integer, Set<String>> possibleValues = new HashMap<>();
     private List<List<String>> resultTable = new LinkedList<>();
 
-    public Solver(List<String> results, Selector selector, List<Closure> closureTable, List<Pattern> patternTable, List<Predicate> predTable, List<With> withTable, AST ast) throws PKBException {
+    public Solver(List<String> results, Selector selector, List<Closure> closureTable, List<Pattern> patternTable, List<Predicate> predTable, List<With> withTable, PKB pkb) throws PKBException {
         this.results = results;
         this.selector = selector;
         this.closureTable = closureTable;
         this.patternTable = patternTable;
         this.predTable = predTable;
         this.withTable = withTable;
-        this.ast = ast;
+        this.pkb = pkb;
 
         int i = 0;
         for (Predicate predicate : predTable) {
@@ -152,7 +152,7 @@ public class Solver {
         if (closureResults.isEmpty()) {
             int i = 0;
             for (Predicate pred : predTable) {
-                List<Node<ASTNode>> allVals = getAllValues(pred.getType());
+                List<Node<ASTNode>> allVals = pkb.getAllValues(pred.getType());
                 for (Node<ASTNode> val : allVals) {
                     possibleValues.computeIfAbsent(i, k -> new HashSet<>());
                     possibleValues.get(i).add(nodeToString(val));
@@ -237,16 +237,16 @@ public class Solver {
             closureResult.setResultType("BOOL");
             if (relation.equals("next")) {
                 if (lhsLineNum != 0 && rhsLineNum != 0) {
-                    closureResult.setBoolResult(ast.checkNext(ast.getStmtByLineNumber(lhsLineNum), ast.getStmtByLineNumber(rhsLineNum), _transient));
+                    closureResult.setBoolResult(pkb.checkNext(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
                 } else if (lhsLineNum != 0) {
-                    closureResult.setBoolResult(!ast.getNext(ast.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getNext(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
                 } else if (rhsLineNum != 0) {
-                    closureResult.setBoolResult(!ast.getPrev(ast.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getPrev(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
                 } else {
-                    List<Node<ASTNode>> nodes = getAllValues("statement");
+                    List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
                     closureResult.setBoolResult(false);
                     for (Node<ASTNode> node : nodes) {
-                        if (!ast.getNext(node, _transient).isEmpty()) {
+                        if (!pkb.getNext(node, _transient).isEmpty()) {
                             closureResult.setBoolResult(true);
                             break;
                         }
@@ -255,16 +255,16 @@ public class Solver {
             }
             if (relation.equals("follows")) {
                 if (lhsLineNum != 0 && rhsLineNum != 0) {
-                    closureResult.setBoolResult(ast.checkFollows(ast.getStmtByLineNumber(lhsLineNum), ast.getStmtByLineNumber(rhsLineNum), _transient));
+                    closureResult.setBoolResult(pkb.checkFollows(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
                 } else if (lhsLineNum != 0) {
-                    closureResult.setBoolResult(!ast.getFollowing(ast.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
                 } else if (rhsLineNum != 0) {
-                    closureResult.setBoolResult(!ast.getFollowed(ast.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getFollowed(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
                 } else {
-                    List<Node<ASTNode>> nodes = getAllValues("statement");
+                    List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
                     closureResult.setBoolResult(false);
                     for (Node<ASTNode> node : nodes) {
-                        if (!ast.getFollowing(node, _transient).isEmpty()) {
+                        if (!pkb.getFollowing(node, _transient).isEmpty()) {
                             closureResult.setBoolResult(true);
                             break;
                         }
@@ -273,16 +273,16 @@ public class Solver {
             }
             if (relation.equals("parent")) {
                 if (lhsLineNum != 0 && rhsLineNum != 0) {
-                    closureResult.setBoolResult(ast.checkParent(ast.getStmtByLineNumber(lhsLineNum), ast.getStmtByLineNumber(rhsLineNum), _transient));
+                    closureResult.setBoolResult(pkb.checkParent(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
                 } else if (lhsLineNum != 0) {
-                    closureResult.setBoolResult(!ast.getChildren(ast.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getChildren(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
                 } else if (rhsLineNum != 0) {
-                    closureResult.setBoolResult(!ast.getParent(ast.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getParent(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
                 } else {
-                    List<Node<ASTNode>> nodes = getAllValues("statement");
+                    List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
                     closureResult.setBoolResult(false);
                     for (Node<ASTNode> node : nodes) {
-                        if (!ast.getParent(node, _transient).isEmpty()) {
+                        if (!pkb.getParent(node, _transient).isEmpty()) {
                             closureResult.setBoolResult(true);
                             break;
                         }
@@ -291,16 +291,16 @@ public class Solver {
             }
             if (relation.equals("calls")) {
                 if (!lhsName.isEmpty() && !rhsName.isEmpty()) {
-                    closureResult.setBoolResult(ast.checkCalls(ast.getProcedureByName(lhsName), ast.getProcedureByName(rhsName), _transient));
+                    closureResult.setBoolResult(pkb.checkCalls(pkb.getProcedureByName(lhsName), pkb.getProcedureByName(rhsName), _transient));
                 } else if (!lhsName.isEmpty()) {
-                    closureResult.setBoolResult(!ast.getCallees(ast.getProcedureByName(lhsName), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getCallees(pkb.getProcedureByName(lhsName), _transient).isEmpty());
                 } else if (!rhsName.isEmpty()) {
-                    closureResult.setBoolResult(!ast.getCallers(ast.getProcedureByName(rhsName), _transient).isEmpty());
+                    closureResult.setBoolResult(!pkb.getCallers(pkb.getProcedureByName(rhsName), _transient).isEmpty());
                 } else {
-                    List<Node<ASTNode>> nodes = getAllValues("procedure");
+                    List<Node<ASTNode>> nodes = pkb.getAllValues("procedure");
                     closureResult.setBoolResult(false);
                     for (Node<ASTNode> node : nodes) {
-                        if (!ast.getCallees(node, _transient).isEmpty()) {
+                        if (!pkb.getCallees(node, _transient).isEmpty()) {
                             closureResult.setBoolResult(true);
                             break;
                         }
@@ -309,18 +309,18 @@ public class Solver {
             }
             if (relation.equals("uses")) {
                 if ((lhsLineNum != 0 || !lhsName.isEmpty()) && !rhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? ast.getStmtByLineNumber(lhsLineNum) : ast.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(ast.checkUses(n, rhsName));
+                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+                    closureResult.setBoolResult(pkb.checkUses(n, rhsName));
                 } else if (lhsLineNum != 0 || !lhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? ast.getStmtByLineNumber(lhsLineNum) : ast.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(!ast.getUsed(n).isEmpty());
+                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+                    closureResult.setBoolResult(!pkb.getUsed(n).isEmpty());
                 } else if (!rhsName.isEmpty()) {
-                    closureResult.setBoolResult(!ast.getUsing(rhsName).isEmpty());
+                    closureResult.setBoolResult(!pkb.getUsing(rhsName).isEmpty());
                 } else {
-                    List<String> vars = getAllVariables();
+                    List<String> vars = pkb.getAllVariables();
                     closureResult.setBoolResult(false);
                     for (String var : vars) {
-                        if (!ast.getUsing(var).isEmpty()) {
+                        if (!pkb.getUsing(var).isEmpty()) {
                             closureResult.setBoolResult(true);
                             break;
                         }
@@ -329,18 +329,18 @@ public class Solver {
             }
             if (relation.equals("modifies")) {
                 if ((lhsLineNum != 0 || !lhsName.isEmpty()) && !rhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? ast.getStmtByLineNumber(lhsLineNum) : ast.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(ast.checkModifies(n, rhsName));
+                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+                    closureResult.setBoolResult(pkb.checkModifies(n, rhsName));
                 } else if (lhsLineNum != 0 || !lhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? ast.getStmtByLineNumber(lhsLineNum) : ast.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(!ast.getModified(n).isEmpty());
+                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+                    closureResult.setBoolResult(!pkb.getModified(n).isEmpty());
                 } else if (!rhsName.isEmpty()) {
-                    closureResult.setBoolResult(!ast.getModifying(rhsName).isEmpty());
+                    closureResult.setBoolResult(!pkb.getModifying(rhsName).isEmpty());
                 } else {
-                    List<String> vars = getAllVariables();
+                    List<String> vars = pkb.getAllVariables();
                     closureResult.setBoolResult(false);
                     for (String var : vars) {
-                        if (!ast.getModifying(var).isEmpty()) {
+                        if (!pkb.getModifying(var).isEmpty()) {
                             closureResult.setBoolResult(true);
                             break;
                         }
@@ -354,14 +354,14 @@ public class Solver {
             if (relation.equals("next")) {
                 if (rhsLineNum != 0) { // numer linii
                     //469
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getPrev(ast.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getPrev(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getPrev(val, _transient), p1.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -370,14 +370,14 @@ public class Solver {
             }
             if (relation.equals("follows")) {
                 if (rhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getFollowed(ast.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowed(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getFollowed(val, _transient), p1.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowed(val, _transient), p1.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -386,14 +386,14 @@ public class Solver {
             }
             if (relation.equals("parent")) {
                 if (rhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getParent(ast.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getParent(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getParent(val, _transient), p1.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getParent(val, _transient), p1.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -402,14 +402,14 @@ public class Solver {
             }
             if (relation.equals("calls")) {
                 if (!rhsName.isEmpty()) { // nazwa procedury
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getCallers(ast.getProcedureByName(rhsName), _transient), p1.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getCallers(pkb.getProcedureByName(rhsName), _transient), p1.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("procedure");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("procedure");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getCallers(val, _transient), p1.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getCallers(val, _transient), p1.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -418,14 +418,14 @@ public class Solver {
             }
             if (relation.equals("uses")) {
                 if (!rhsName.isEmpty()) { // zmienna
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getUsing(rhsName), p1.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getUsing(rhsName), p1.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<String> allVars = getAllVariables();
+                    List<String> allVars = pkb.getAllVariables();
                     for (String var : allVars) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getUsing(var), p1.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getUsing(var), p1.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -434,14 +434,14 @@ public class Solver {
             }
             if (relation.equals("modifies")) {
                 if (!rhsName.isEmpty()) { // zmienna
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getModifying(rhsName), p1.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getModifying(rhsName), p1.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<String> allVars = getAllVariables();
+                    List<String> allVars = pkb.getAllVariables();
                     for (String var : allVars) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getModifying(var), p1.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getModifying(var), p1.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -455,14 +455,14 @@ public class Solver {
             closureResult.setP(p2.getValue());
             if (relation.equals("next")) {
                 if (lhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getNext(ast.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getNext(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getNext(val, _transient), p2.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getNext(val, _transient), p2.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -471,14 +471,14 @@ public class Solver {
             }
             if (relation.equals("follows")) {
                 if (lhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getFollowing(ast.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowing(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getFollowing(val, _transient), p2.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowing(val, _transient), p2.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -487,14 +487,14 @@ public class Solver {
             }
             if (relation.equals("parent")) {
                 if (lhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getChildren(ast.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getChildren(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = filterNodesByType(getAllValues("statement"), "if", "while");
+                    List<Node<ASTNode>> allVals = filterNodesByType(pkb.getAllValues("statement"), "if", "while");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getChildren(val, _transient), p2.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getChildren(val, _transient), p2.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -503,14 +503,14 @@ public class Solver {
             }
             if (relation.equals("calls")) {
                 if (!lhsName.isEmpty()) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(ast.getCallees(ast.getProcedureByName(lhsName), _transient), p2.getType());
+                    List<Node<ASTNode>> results = filterNodesByType(pkb.getCallees(pkb.getProcedureByName(lhsName), _transient), p2.getType());
                     for (Node<ASTNode> res : results) {
                         closureResult.addValue(nodeToString(res));
                     }
                 } else { // _
-                    List<Node<ASTNode>> allVals = getAllValues("procedure");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("procedure");
                     for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(ast.getCallees(val, _transient), p2.getType());
+                        List<Node<ASTNode>> results = filterNodesByType(pkb.getCallees(val, _transient), p2.getType());
                         for (Node<ASTNode> res : results) {
                             closureResult.addValue(nodeToString(res));
                         }
@@ -519,17 +519,17 @@ public class Solver {
             }
             if (relation.equals("uses")) {
                 if (lhsLineNum != 0 || !lhsName.isEmpty()) { // stmt lub proc
-                    Node<ASTNode> n = lhsLineNum != 0 ? ast.getStmtByLineNumber(lhsLineNum) : ast.getProcedureByName(lhsName);
-                    List<String> results = ast.getUsed(n);
+                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+                    List<String> results = pkb.getUsed(n);
                     for (String res : results) {
                         closureResult.addValue(res);
                     }
                 } else { // _
-                    List<Node<ASTNode>> procNodes = getAllValues("procedure");
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     allVals.addAll(procNodes);
                     for (Node<ASTNode> val : allVals) {
-                        List<String> results = ast.getUsed(val);
+                        List<String> results = pkb.getUsed(val);
                         for (String res : results) {
                             closureResult.addValue(res);
                         }
@@ -538,17 +538,17 @@ public class Solver {
             }
             if (relation.equals("modifies")) {
                 if (lhsLineNum != 0 || !lhsName.isEmpty()) { // stmt lub proc
-                    Node<ASTNode> n = lhsLineNum != 0 ? ast.getStmtByLineNumber(lhsLineNum) : ast.getProcedureByName(lhsName);
-                    List<String> results = ast.getModified(n);
+                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+                    List<String> results = pkb.getModified(n);
                     for (String res : results) {
                         closureResult.addValue(res);
                     }
                 } else { // _
-                    List<Node<ASTNode>> procNodes = getAllValues("procedure");
-                    List<Node<ASTNode>> allVals = getAllValues("statement");
+                    List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
+                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                     allVals.addAll(procNodes);
                     for (Node<ASTNode> val : allVals) {
-                        List<String> results = ast.getModified(val);
+                        List<String> results = pkb.getModified(val);
                         for (String res : results) {
                             closureResult.addValue(res);
                         }
@@ -561,104 +561,104 @@ public class Solver {
             closureResult.setP(p1.getValue());
             closureResult.setQ(p2.getValue());
             if (relation.equals("next")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(getAllValues("statement"), p1.getType());
+                List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("statement"), p1.getType());
                 for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(ast.getNext(val, _transient), p2.getType());
+                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getNext(val, _transient), p2.getType());
                     for (Node<ASTNode> r : pResults) {
                         closureResult.addPq(nodeToString(val), nodeToString(r));
                     }
                 }
-                List<Node<ASTNode>> allQVals = filterNodesByType(getAllValues("statement"), p2.getType());
+                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("statement"), p2.getType());
                 for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(ast.getPrev(val, _transient), p1.getType());
+                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
                     for (Node<ASTNode> r : qResults) {
                         closureResult.addQp(nodeToString(val), nodeToString(r));
                     }
                 }
             }
             if (relation.equals("follows")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(getAllValues("statement"), p1.getType());
+                List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("statement"), p1.getType());
                 for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(ast.getFollowing(val, _transient), p2.getType());
+                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getFollowing(val, _transient), p2.getType());
                     for (Node<ASTNode> r : pResults) {
                         closureResult.addPq(nodeToString(val), nodeToString(r));
                     }
                 }
-                List<Node<ASTNode>> allQVals = filterNodesByType(getAllValues("statement"), p2.getType());
+                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("statement"), p2.getType());
                 for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(ast.getFollowed(val, _transient), p1.getType());
+                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getFollowed(val, _transient), p1.getType());
                     for (Node<ASTNode> r : qResults) {
                         closureResult.addQp(nodeToString(val), nodeToString(r));
                     }
                 }
             }
             if (relation.equals("parent")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(filterNodesByType(getAllValues("statement"), "if", "while"), p1.getType());
+                List<Node<ASTNode>> allPVals = filterNodesByType(filterNodesByType(pkb.getAllValues("statement"), "if", "while"), p1.getType());
                 for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(ast.getChildren(val, _transient), p2.getType());
+                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getChildren(val, _transient), p2.getType());
                     for (Node<ASTNode> r : pResults) {
                         closureResult.addPq(nodeToString(val), nodeToString(r));
                     }
                 }
-                List<Node<ASTNode>> allQVals = filterNodesByType(getAllValues("statement"), p2.getType());
+                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("statement"), p2.getType());
                 for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>>  qResults = filterNodesByType(ast.getParent(val, _transient), p1.getType());
+                    List<Node<ASTNode>>  qResults = filterNodesByType(pkb.getParent(val, _transient), p1.getType());
                     for (Node<ASTNode> r : qResults) {
                         closureResult.addQp(nodeToString(val), nodeToString(r));
                     }
                 }
             }
             if (relation.equals("calls")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(getAllValues("procedure"), p1.getType());
+                List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("procedure"), p1.getType());
                 for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(ast.getCallees(val, _transient), p2.getType());
+                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getCallees(val, _transient), p2.getType());
                     for (Node<ASTNode> r : pResults) {
                         closureResult.addPq(nodeToString(val), nodeToString(r));
                     }
                 }
-                List<Node<ASTNode>> allQVals = filterNodesByType(getAllValues("procedure"), p2.getType());
+                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("procedure"), p2.getType());
                 for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(ast.getCallers(val, _transient), p1.getType());
+                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getCallers(val, _transient), p1.getType());
                     for (Node<ASTNode> r : qResults) {
                         closureResult.addQp(nodeToString(val), nodeToString(r));
                     }
                 }
             }
             if (relation.equals("uses")) {
-                List<Node<ASTNode>> procNodes = getAllValues("procedure");
-                List<Node<ASTNode>> allVals = getAllValues("statement");
+                List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
+                List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                 allVals.addAll(procNodes);
 
                 List<Node<ASTNode>> allPVals = filterNodesByType(allVals, p1.getType());
                 for (Node<ASTNode> val : allPVals) {
-                    List<String> pResults = ast.getUsed(val);
+                    List<String> pResults = pkb.getUsed(val);
                     for (String r : pResults) {
                         closureResult.addPq(nodeToString(val), r);
                     }
                 }
-                List<String> allQVals = getAllVariables();
+                List<String> allQVals = pkb.getAllVariables();
                 for (String val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(ast.getUsing(val), p1.getType());
+                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getUsing(val), p1.getType());
                     for (Node<ASTNode> r : qResults) {
                         closureResult.addQp(val, nodeToString(r));
                     }
                 }
             }
             if (relation.equals("modifies")) {
-                List<Node<ASTNode>> procNodes = getAllValues("procedure");
-                List<Node<ASTNode>> allVals = getAllValues("statement");
+                List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
+                List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
                 allVals.addAll(procNodes);
 
                 List<Node<ASTNode>> allPVals = filterNodesByType(allVals, p1.getType());
                 for (Node<ASTNode> val : allPVals) {
-                    List<String> pResults = ast.getModified(val);
+                    List<String> pResults = pkb.getModified(val);
                     for (String r : pResults) {
                         closureResult.addPq(nodeToString(val), r);
                     }
                 }
-                List<String> allQVals = getAllVariables();
+                List<String> allQVals = pkb.getAllVariables();
                 for (String val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(ast.getModifying(val), p1.getType());
+                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getModifying(val), p1.getType());
                     for (Node<ASTNode> r : qResults) {
                         closureResult.addQp(val, nodeToString(r));
                     }
@@ -671,7 +671,7 @@ public class Solver {
 
     private ClosureResult getPatternResult(Pattern pattern) {
         ClosureResult result = new ClosureResult();
-        List<Node<ASTNode>> nodes = ast.getPattern(pattern.getLhs(), pattern.getRhs());
+        List<Node<ASTNode>> nodes = pkb.getPattern(pattern.getLhs(), pattern.getRhs());
         if (nodes.isEmpty()) {
             result.setResultType("BOOL");
             result.setBoolResult(false);
@@ -679,7 +679,7 @@ public class Solver {
             result.setResultType("SET");
             result.setP(pattern.getVarName());
             for (Node<ASTNode> node : nodes) {
-                result.addValue(String.valueOf(ast.getLineNumber(node)));
+                result.addValue(String.valueOf(node.getData().getLineNumber()));
             }
         }
 
@@ -692,7 +692,7 @@ public class Solver {
             closureResult.setResultType("MAP");
             closureResult.setP(with.getLhsVarName());
             closureResult.setQ(with.getRhsVarName());
-            Set<String> allVals = getAllPropertyValues(with.getLhsPropertyName());
+            Set<String> allVals = pkb.getAllPropertyValues(with.getLhsPropertyName());
             for (String val : allVals) {
                 closureResult.addPq(val, val);
                 closureResult.addQp(val, val);
@@ -703,8 +703,8 @@ public class Solver {
             closureResult.setP(with.getLhsVarName());
             closureResult.setQ(with.getRhsVarName());
             Set<String> allVals = new HashSet<>();
-            Set<String> lhsVals = getAllPropertyValues(with.getLhsPropertyName());
-            Set<String> rhsVals = getAllPropertyValues(with.getRhsPropertyName());
+            Set<String> lhsVals = pkb.getAllPropertyValues(with.getLhsPropertyName());
+            Set<String> rhsVals = pkb.getAllPropertyValues(with.getRhsPropertyName());
             for (String el : lhsVals) {
                 if (rhsVals.contains(el)) {
                     allVals.add(el);
@@ -717,7 +717,7 @@ public class Solver {
         } else if (with.getLhsPropertyName().equals("value")) {
             closureResult.setResultType("BOOLEAN");
             closureResult.setBoolResult(false);
-            Set<String> constants = ast.getConstants();
+            Set<String> constants = pkb.getConstants();
             for (String c : constants) {
                 if (c.equals(with.getRhsVarName())) {
                     closureResult.setBoolResult(true);
@@ -738,27 +738,6 @@ public class Solver {
         return closureResult;
     }
 
-    private Set<String> getAllPropertyValues(String propName) {
-        Set<String> result = new HashSet<>();
-        if (propName.equals("stmt")) {
-            int lines = ast.getProgramLines().size();
-            for (int i = 1; i <= lines; i++) {
-                result.add(String.valueOf(i));
-            }
-        } else if (propName.equals("value")) {
-            result.addAll(ast.getConstants());
-        } else if (propName.equals("procName")) {
-            List<Node<ASTNode>> procedures = ast.getProcedures();
-            for (Node<ASTNode> p : procedures) {
-                result.add(p.getData().getParam(NodeParamType.NAME));
-            }
-        } else if (propName.equals("varName")) {
-            result.addAll(ast.getVariables());
-        }
-
-        return result;
-    }
-
     private String nodeToString(Node<ASTNode> node) {
         switch (node.getData().getNodeType()) {
             case PROCEDURE:
@@ -766,7 +745,7 @@ public class Solver {
             case CONSTANT:
                 return node.getData().getParam(NodeParamType.NAME);
             default:
-                return String.valueOf(ast.getLineNumber(node));
+                return String.valueOf(node.getData().getLineNumber());
         }
     }
     private List<Node<ASTNode>> filterNodesByType(List<Node<ASTNode>> nodes, String type) {
@@ -810,36 +789,5 @@ public class Solver {
             return nodeType == NodeType.CONSTANT;
         }
         return false;
-    }
-
-    private List<String> getAllVariables() {
-        return new ArrayList<>(ast.getVariables());
-    }
-
-    private List<Node<ASTNode>> getAllValues(String predType) {
-        List<Node<ASTNode>> result = new ArrayList<>();
-        List<List<Node<ASTNode>>> nodeTypes = new ArrayList<>();
-        if (predType.equals("procedure")) {
-            nodeTypes.add(ast.getProcedures());
-        } else if (predType.equals("statement")) {
-            nodeTypes.add(ast.getWhiles());
-            nodeTypes.add(ast.getIfs());
-            nodeTypes.add(ast.getAssigments());
-            nodeTypes.add(ast.getCallNodes());
-        } else if (predType.equals("while")) {
-            nodeTypes.add(ast.getWhiles());
-        } else if (predType.equals("if")) {
-            nodeTypes.add(ast.getIfs());
-        }
-        else if (predType.equals("call")) {
-            nodeTypes.add(ast.getCallNodes());
-        } else if (predType.equals("assign")) {
-            nodeTypes.add(ast.getAssigments());
-        }
-
-        for (List<Node<ASTNode>> nodeType : nodeTypes) {
-            result.addAll(nodeType);
-        }
-        return result;
     }
 }

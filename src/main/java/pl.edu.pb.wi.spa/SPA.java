@@ -1,12 +1,13 @@
 package pl.edu.pb.wi.spa;
 
-import pl.edu.pb.wi.spa.ast.AST;
-import pl.edu.pb.wi.spa.ast.builder.Builder;
+import pl.edu.pb.wi.spa.common.AST;
 import pl.edu.pb.wi.spa.exception.PKBException;
 import pl.edu.pb.wi.spa.exception.QueryException;
 import pl.edu.pb.wi.spa.frontend.parser.Parser;
 import pl.edu.pb.wi.spa.frontend.parser.ParserImpl;
 import pl.edu.pb.wi.spa.parser.query.QueriesParser;
+import pl.edu.pb.wi.spa.pkb.PKB;
+import pl.edu.pb.wi.spa.pkb.builder.Builder;
 import pl.edu.pb.wi.spa.tree.ASTNode;
 import pl.edu.pb.wi.spa.tree.Node;
 
@@ -18,15 +19,15 @@ import java.util.Scanner;
 public class SPA {
     public static void main(String[] args) throws QueryException, PKBException {
         final String sourceFile = "tests/iteracja1/prog3.simple";
-        Builder builder = new Builder();
-        Parser parser = new ParserImpl(builder);
+        Parser parser = new ParserImpl();
+        AST ast = parser.parse(sourceFile);
 
-        parser.parse(sourceFile);
-
-        Node<ASTNode> astTree = builder.getAstTree();
+        Node<ASTNode> astTree = ast.getTree();
         printTree(astTree);
 
-        AST ast = builder.getAST();
+        Builder builder = new Builder(ast);
+
+        PKB pkb = builder.buildPKB();
 
         System.out.println("Ready");
 
@@ -37,7 +38,7 @@ public class SPA {
             String query = q1 + " " + q2;
 
             List<String> results = new ArrayList<>();
-            QueriesParser queriesParser = new QueriesParser(ast, query, results);
+            QueriesParser queriesParser = new QueriesParser(pkb, query, results);
             queriesParser.parseQuery();
 
             if (queriesParser.getResults().isEmpty()) {

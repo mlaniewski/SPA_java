@@ -1,0 +1,148 @@
+package pl.edu.pb.wi.spa.common;
+
+import pl.edu.pb.wi.spa.tree.ASTNode;
+import pl.edu.pb.wi.spa.tree.Node;
+import pl.edu.pb.wi.spa.tree.NodeParamType;
+import pl.edu.pb.wi.spa.tree.NodeType;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+public class AST {
+    private List<Node<ASTNode>> tree;
+    private List<Node<ASTNode>> procedures;
+    private List<Node<ASTNode>> whiles;
+    private List<Node<ASTNode>> ifs;
+    private List<Node<ASTNode>> assignments;
+    private List<Node<ASTNode>> callNodes;
+    private List<Node<ASTNode>> varNodes;
+    private List<Node<ASTNode>> constantNodes;
+    private List<Node<ASTNode>> programLines;
+
+    public AST() {
+        ASTNode n = new ASTNode(NodeType.PROGRAM);
+        this.tree = Collections.singletonList(new Node<>(n));
+        this.procedures = new ArrayList<>();
+        this.whiles = new ArrayList<>();
+        this.ifs = new ArrayList<>();
+        this.assignments = new ArrayList<>();
+        this.callNodes = new ArrayList<>();
+        this.varNodes = new ArrayList<>();
+        this.constantNodes = new ArrayList<>();
+        this.programLines = new ArrayList<>();
+    }
+
+    public Node<ASTNode> createNode(NodeType nodeType) {
+        if (nodeType == NodeType.PROGRAM) {
+            return tree.iterator().next();
+        }
+        ASTNode n = new ASTNode(nodeType);
+        Node<ASTNode> node = tree.iterator().next().addChild(new Node<>(n));
+        n.setTreeIterator(node);
+
+        switch (nodeType) {
+            case PROCEDURE:
+                procedures.add(node);
+                break;
+            case VARIABLE:
+                varNodes.add(node);
+                break;
+            case CALL:
+                callNodes.add(node);
+                break;
+            case WHILE:
+                whiles.add(node);
+                break;
+            case IF:
+                ifs.add(node);
+                break;
+            case ASSIGN:
+                assignments.add(node);
+                break;
+            case CONSTANT:
+                constantNodes.add(node);
+                break;
+            default:
+                break;
+        }
+        return node;
+    }
+
+    public void addChild(Node<ASTNode> parent, Node<ASTNode> child) {
+        if (parent.getData().getNodeType() != NodeType.PROGRAM) {
+            parent.addChild(child);
+        }
+    }
+
+    public void addNodeParameter(Node<ASTNode> node, NodeParamType paramType, String value) {
+        node.getData().setParam(paramType, value);
+    }
+
+    public Node<ASTNode> getProcedureByName(String procName) {
+        Optional<Node<ASTNode>> procNode = procedures.stream().filter(node -> node.getData().getParam(NodeParamType.NAME).equals(procName)).findFirst();
+        return procNode.orElse(null);
+    }
+
+
+    public Node<ASTNode> getTree() {
+        return tree.get(0);
+    }
+
+    public List<Node<ASTNode>> getAstTreeAsList() {
+        List<Node<ASTNode>> list = new ArrayList<>();
+        Node<ASTNode> astTree = getTree();
+        list.add(astTree);
+        list.addAll(astTree.getChildren());
+        return list;
+    }
+
+    public void addLineNumbers() {
+        List<Node<ASTNode>> list = getAstTreeAsList();
+        int lineNumber = 0;
+        for (Node<ASTNode> node : list) {
+            ASTNode astNode = node.getData();
+            switch (astNode.getNodeType()) {
+                case CALL:
+                case WHILE:
+                case IF:
+                case ASSIGN:
+                    astNode.setLineNumber(++lineNumber);
+                    programLines.add(node);
+            }
+        }
+    }
+
+    public List<Node<ASTNode>> getProgramLines() {
+        return programLines;
+    }
+
+    public List<Node<ASTNode>> getProcedures() {
+        return procedures;
+    }
+
+    public List<Node<ASTNode>> getWhiles() {
+        return whiles;
+    }
+
+    public List<Node<ASTNode>> getIfs() {
+        return ifs;
+    }
+
+    public List<Node<ASTNode>> getAssignments() {
+        return assignments;
+    }
+
+    public List<Node<ASTNode>> getCallNodes() {
+        return callNodes;
+    }
+
+    public List<Node<ASTNode>> getVarNodes() {
+        return varNodes;
+    }
+
+    public List<Node<ASTNode>> getConstantNodes() {
+        return constantNodes;
+    }
+}

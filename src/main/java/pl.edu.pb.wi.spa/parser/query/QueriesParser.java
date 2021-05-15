@@ -1,13 +1,13 @@
 package pl.edu.pb.wi.spa.parser.query;
 
-import pl.edu.pb.wi.spa.ast.AST;
-import pl.edu.pb.wi.spa.common.Predicate;
-import pl.edu.pb.wi.spa.common.With;
 import pl.edu.pb.wi.spa.common.Closure;
+import pl.edu.pb.wi.spa.common.Predicate;
 import pl.edu.pb.wi.spa.common.Selector;
+import pl.edu.pb.wi.spa.common.With;
 import pl.edu.pb.wi.spa.common.Pattern;
 import pl.edu.pb.wi.spa.exception.PKBException;
 import pl.edu.pb.wi.spa.exception.QueryException;
+import pl.edu.pb.wi.spa.pkb.PKB;
 import pl.edu.pb.wi.spa.solver.Solver;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class QueriesParser {
-    private AST ast;
+    private PKB pkb;
     private String query;
     private List<String> results;
 
@@ -26,8 +26,8 @@ public class QueriesParser {
     private List<With> withTable = new ArrayList<>();
     private List<Pattern> patternTable = new ArrayList<>();
 
-    public QueriesParser(AST ast, String query, List<String> results) {
-        this.ast = ast;
+    public QueriesParser(PKB pkb, String query, List<String> results) {
+        this.pkb = pkb;
         this.query = query;
         this.results = results;
     }
@@ -288,7 +288,7 @@ public class QueriesParser {
             }
         }
 
-        Solver solver = new Solver(results, selector, closureTable, patternTable, predTable, withTable, ast);
+        Solver solver = new Solver(results, selector, closureTable, patternTable, predTable, withTable, pkb);
         solver.evaluate();
     }
 

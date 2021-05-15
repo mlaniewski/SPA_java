@@ -1,6 +1,8 @@
-package pl.edu.pb.wi.spa.ast.builder;
+package pl.edu.pb.wi.spa.pkb.builder;
 
-import pl.edu.pb.wi.spa.ast.AST;
+import pl.edu.pb.wi.spa.common.AST;
+import pl.edu.pb.wi.spa.pkb.PKB;
+import pl.edu.pb.wi.spa.pkb.PKBImpl;
 import pl.edu.pb.wi.spa.tree.ASTNode;
 import pl.edu.pb.wi.spa.tree.Node;
 import pl.edu.pb.wi.spa.tree.NodeParamType;
@@ -9,17 +11,8 @@ import pl.edu.pb.wi.spa.tree.NodeType;
 import java.util.*;
 
 public class Builder {
-
-    private AST ast;
-    private List<Node<ASTNode>> astTree;
-    private List<Node<ASTNode>> procedures;
-    private List<Node<ASTNode>> whiles;
-    private List<Node<ASTNode>> ifs;
-    private List<Node<ASTNode>> assignments;
     private Set<String> variables;
     private Set<String> constants;
-    private List<Node<ASTNode>> callNodes;
-    private List<Node<ASTNode>> programLines;
     private Map<Integer, Set<Integer>> callers;
     private Map<Integer, Set<Integer>> callersT;
     private Map<Integer, Set<Integer>> callees;
@@ -39,20 +32,13 @@ public class Builder {
     private Map<Integer, Set<String>> pattern;
     private Map<Integer, String> fullPattern;
 
-    private List<Node<ASTNode>> varNodes;
-    private List<Node<ASTNode>> constantNodes;
-    private List<Integer> tempUiVector;
+    private List<Integer> tempUiVector = new ArrayList<>();
+    private AST ast;
 
-    public Builder() {
-        ASTNode n = new ASTNode(NodeType.PROGRAM);
-        astTree = Collections.singletonList(new Node<>(n));
-        procedures = new ArrayList<>();
-        whiles = new ArrayList<>();
-        ifs = new ArrayList<>();
-        assignments = new ArrayList<>();
+    public Builder(AST ast) {
+        this.ast = ast;
         variables = new HashSet<>();
         constants = new HashSet<>();
-        programLines = new ArrayList<>();
         callers = new HashMap<>();
         callersT = new HashMap<>();
         callees = new HashMap<>();
@@ -71,9 +57,33 @@ public class Builder {
         prevT = new HashMap<>();
         pattern = new HashMap<>();
         fullPattern = new HashMap<>();
-        callNodes = new ArrayList<>();
-        ast = new AST(
-                callers,
+    }
+
+    public PKB buildPKB() {
+        initializeCallMaps();
+        initializeParentMap(ast.getAstTreeAsList().get(0));
+        initializeModifiesAndUsesMaps();
+        for (Node<ASTNode> procedure : ast.getProcedures()) {
+            Node<ASTNode> procedureChild = procedure.getChildren().iterator().next();
+            initializeNextStmtLst(procedureChild, null);
+        }
+        initializeTransientRelation(nextT);
+        initializeTransientRelation(callersT);
+        initializeTransientRelation(calleesT);
+        initializeTransientRelation(childrenT);
+        initializeInvertedVariableRelation(modifies, modified);
+        initializeInvertedVariableRelation(uses, used);
+        initializeTransientRelation(prevT);
+        initializePattern(ast.getAssignments());
+
+        for (Node<ASTNode> varNode : ast.getVarNodes()) {
+            variables.add(varNode.getData().getParam(NodeParamType.NAME));
+        }
+        for (Node<ASTNode> constantNode : ast.getConstantNodes()) {
+            constants.add(constantNode.getData().getParam(NodeParamType.NAME));
+        }
+
+        return new PKBImpl(callers,
                 callersT,
                 callees,
                 calleesT,
@@ -91,118 +101,13 @@ public class Builder {
                 prevT,
                 pattern,
                 fullPattern,
-                procedures,
-                whiles,
-                ifs,
-                assignments,
                 variables,
                 constants,
-                callNodes,
-                programLines);
-        varNodes = new ArrayList<>();
-        constantNodes = new ArrayList<>();
-    }
-
-    public Node<ASTNode> createNode(NodeType nodeType) {
-        if (nodeType == NodeType.PROGRAM) {
-            return astTree.iterator().next();
-        }
-        ASTNode n = new ASTNode(nodeType);
-        Node<ASTNode> node = astTree.iterator().next().addChild(new Node<>(n));
-        n.setTreeIterator(node);
-
-        switch (nodeType) {
-            case PROCEDURE:
-                procedures.add(node);
-                break;
-            case VARIABLE:
-                varNodes.add(node);
-                break;
-            case CALL:
-                callNodes.add(node);
-                break;
-            case WHILE:
-                whiles.add(node);
-                break;
-            case IF:
-                ifs.add(node);
-                break;
-            case ASSIGN:
-                assignments.add(node);
-                break;
-            case CONSTANT:
-                constantNodes.add(node);
-                break;
-            default:
-                break;
-        }
-        return node;
-    }
-
-    public void addChild(Node<ASTNode> parent, Node<ASTNode> child) {
-        if (parent.getData().getNodeType() != NodeType.PROGRAM) {
-            //astTree.iterator().next().
-            //astTree->move_ontop(astTree->append_child(parent), child);
-            parent.addChild(child);
-        }
-    }
-
-    public void addNodeParameter(Node<ASTNode> node, NodeParamType paramType, String value) {
-        node.getData().setParam(paramType, value);
-    }
-
-    public Node<ASTNode> getAstTree() {
-        return astTree.get(0);
-    }
-
-    //TODO to tak naprawde budowa PKB
-    public AST getAST() {
-        List<Node<ASTNode>> list = getAstTreeAsList();
-
-        addLineNumbers(list);
-        initializeCallMaps();
-        tempUiVector = new ArrayList<>();
-        initializeParentMap(list.get(0));
-        initializeModifiesAndUsesMaps();
-        for (Node<ASTNode> procedure : procedures) {
-            Node<ASTNode> procedureChild = procedure.getChildren().iterator().next();
-            initializeNextStmtLst(procedureChild, null);
-        }
-        initializeTransientRelation(nextT);
-        initializeTransientRelation(callersT);
-        initializeTransientRelation(calleesT);
-        initializeTransientRelation(childrenT);
-        initializeInvertedVariableRelation(modifies, modified);
-        initializeInvertedVariableRelation(uses, used);
-        initializeTransientRelation(prevT);
-        initializePattern();
-
-        for (Node<ASTNode> varNode : varNodes) {
-            variables.add(varNode.getData().getParam(NodeParamType.NAME));
-        }
-        for (Node<ASTNode> constantNode : constantNodes) {
-            constants.add(constantNode.getData().getParam(NodeParamType.NAME));
-        }
-
-        return ast;
-    }
-
-    private void addLineNumbers(List<Node<ASTNode>> list) {
-        int lineNumber = 0;
-        for (Node<ASTNode> node : list) {
-            ASTNode astNode = node.getData();
-            switch (astNode.getNodeType()) {
-                case CALL:
-                case WHILE:
-                case IF:
-                case ASSIGN:
-                    astNode.setLineNumber(++lineNumber);
-                    programLines.add(node);
-            }
-        }
+                ast);
     }
 
     private void initializeCallMaps() {
+        List<Node<ASTNode>> callNodes = ast.getCallNodes();
         for (Node<ASTNode> callNode : callNodes) {
             ASTNode node = callNode.getData();
             ASTNode caller = ast.getProcedureByName(node.getParam(NodeParamType.CALLER)).getData();
@@ -247,12 +152,15 @@ public class Builder {
             }
             if (isContainerNode) {
                 tempUiVector.remove(tempUiVector.get(tempUiVector.size() - 1)); // tempUiVector.pop_back();
-
             }
         }
     }
 
     private void initializeModifiesAndUsesMaps() {
+        List<Node<ASTNode>> assignments = ast.getAssignments();
+        List<Node<ASTNode>> procedures = ast.getProcedures();
+        List<Node<ASTNode>> callNodes = ast.getCallNodes();
+
         for (Node<ASTNode> assignIt : assignments) {
             Node<ASTNode> assignNodeIt = assignIt.getChildren().iterator().next();
             String variable = assignNodeIt.getData().getParam(NodeParamType.NAME);
@@ -438,7 +346,7 @@ public class Builder {
         }
     }
 
-    private void initializePattern() {
+    private void initializePattern(List<Node<ASTNode>> assignments ) {
         for (Node<ASTNode> assignment : assignments) {
             Iterator<Node<ASTNode>> it = assignment.getChildren().iterator();
             it.next(); //variable name
@@ -511,13 +419,5 @@ public class Builder {
                 inv.get(val).add(id);
             }));
         });
-    }
-
-    private List<Node<ASTNode>> getAstTreeAsList() {
-        List<Node<ASTNode>> list = new ArrayList<>();
-        Node<ASTNode> astTree = getAstTree();
-        list.add(astTree);
-        list.addAll(astTree.getChildren());
-        return list;
     }
 }
