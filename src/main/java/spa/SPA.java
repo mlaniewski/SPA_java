@@ -34,12 +34,13 @@ public class SPA {
             String q2 = sc.nextLine();
             String query = q1 + " " + q2;
 
-            QueriesParser queriesParser = new QueriesParser(query);
-            queriesParser.parseQuery();
+            QueriesParser queriesParser = new QueriesParser();
+            queriesParser.parse(query);
 
             QueryTree queryTree = queriesParser.getQueryTree();
 
             QueryEvaluator evaluator = new QueryEvaluator(queryTree, pkb);
+            evaluator.prepareResults();
             evaluator.evaluate();
 
             QueryResultProjector projector = new QueryResultProjector();

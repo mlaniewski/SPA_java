@@ -4,6 +4,8 @@ import spa.common.*;
 import spa.exception.PKBException;
 import spa.pkb.PKB;
 import spa.query.parser.QueryTree;
+import spa.relation.Next;
+import spa.relation.RelationResultEvaluator;
 import spa.tree.ASTNode;
 import spa.tree.Node;
 import spa.tree.NodeParamType;
@@ -24,8 +26,10 @@ public class QueryEvaluator {
     private Map<Integer, List<ClosureResult>> dependentClosures;
     private Map<Integer, Set<String>> possibleValues;
     private List<List<String>> resultTable;
+    //relations
+    private RelationResultEvaluator next;
 
-    public QueryEvaluator(QueryTree queryTree, PKB pkb) throws PKBException {
+    public QueryEvaluator(QueryTree queryTree, PKB pkb) {
         this.queryTree = queryTree;
         this.pkb = pkb;
         this.results = new ArrayList<>();
@@ -36,7 +40,10 @@ public class QueryEvaluator {
         this.dependentClosures = new HashMap<>();
         this.possibleValues = new HashMap<>();
         this.resultTable = new LinkedList<>();
+        this.next = new Next(pkb);
+    }
 
+    public void prepareResults() throws PKBException {
         int i = 0;
         for (Predicate predicate : queryTree.getPredTable()) {
             valueOfPred.add(predicate.getValue());
@@ -226,24 +233,8 @@ public class QueryEvaluator {
         }
 
         if (p1.getType().isEmpty() && p2.getType().isEmpty()) { // 0 predykatow
-            closureResult.setResultType("BOOL");
             if (relation.equals("next")) {
-                if (lhsLineNum != 0 && rhsLineNum != 0) {
-                    closureResult.setBoolResult(pkb.checkNext(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
-                } else if (lhsLineNum != 0) {
-                    closureResult.setBoolResult(!pkb.getNext(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
-                } else if (rhsLineNum != 0) {
-                    closureResult.setBoolResult(!pkb.getPrev(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
-                } else {
-                    List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
-                    closureResult.setBoolResult(false);
-                    for (Node<ASTNode> node : nodes) {
-                        if (!pkb.getNext(node, _transient).isEmpty()) {
-                            closureResult.setBoolResult(true);
-                            break;
-                        }
-                    }
-                }
+                closureResult = next.getResultWhenNoPredicate(lhsLineNum, rhsLineNum, _transient);
             }
             if (relation.equals("follows")) {
                 if (lhsLineNum != 0 && rhsLineNum != 0) {
@@ -339,26 +330,11 @@ public class QueryEvaluator {
                     }
                 }
             }
+            closureResult.setResultType("BOOL");
         }
         else if (p2.getType().isEmpty()) { // predykat z lewej
-            closureResult.setResultType("SET");
-            closureResult.setP(p1.getValue());
             if (relation.equals("next")) {
-                if (rhsLineNum != 0) { // numer linii
-                    //469
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getPrev(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = next.getResultWhenLeftPredicate(p1, rhsLineNum, _transient);
             }
             if (relation.equals("follows")) {
                 if (rhsLineNum != 0) { // numer linii
@@ -441,25 +417,12 @@ public class QueryEvaluator {
 
                 }
             }
+            closureResult.setResultType("SET");
+            closureResult.setP(p1.getValue());
         }
         else if (p1.getType().isEmpty()) { // predykat z prawej
-            closureResult.setResultType("SET");
-            closureResult.setP(p2.getValue());
             if (relation.equals("next")) {
-                if (lhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getNext(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getNext(val, _transient), p2.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = next.getResultWhenRightPredicate(p2, lhsLineNum, _transient);
             }
             if (relation.equals("follows")) {
                 if (lhsLineNum != 0) { // numer linii
@@ -547,26 +510,12 @@ public class QueryEvaluator {
                     }
                 }
             }
+            closureResult.setResultType("SET");
+            closureResult.setP(p2.getValue());
         }
         else { // 2 predykaty
-            closureResult.setResultType("MAP");
-            closureResult.setP(p1.getValue());
-            closureResult.setQ(p2.getValue());
             if (relation.equals("next")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("statement"), p1.getType());
-                for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getNext(val, _transient), p2.getType());
-                    for (Node<ASTNode> r : pResults) {
-                        closureResult.addPq(nodeToString(val), nodeToString(r));
-                    }
-                }
-                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("statement"), p2.getType());
-                for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
-                    for (Node<ASTNode> r : qResults) {
-                        closureResult.addQp(nodeToString(val), nodeToString(r));
-                    }
-                }
+                closureResult = next.getResultWhenBothPredicates(p1, p2, _transient);
             }
             if (relation.equals("follows")) {
                 List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("statement"), p1.getType());
@@ -656,6 +605,9 @@ public class QueryEvaluator {
                     }
                 }
             }
+            closureResult.setResultType("MAP");
+            closureResult.setP(p1.getValue());
+            closureResult.setQ(p2.getValue());
         }
 
         return closureResult;
@@ -730,6 +682,7 @@ public class QueryEvaluator {
         return closureResult;
     }
 
+    @Deprecated
     private String nodeToString(Node<ASTNode> node) {
         switch (node.getData().getNodeType()) {
             case PROCEDURE:
@@ -740,10 +693,13 @@ public class QueryEvaluator {
                 return String.valueOf(node.getData().getLineNumber());
         }
     }
+
+    @Deprecated
     private List<Node<ASTNode>> filterNodesByType(List<Node<ASTNode>> nodes, String type) {
         return filterNodesByType(nodes, type, "");
     }
 
+    @Deprecated
     private List<Node<ASTNode>> filterNodesByType(List<Node<ASTNode>> nodes, String type, String type2) {
         List<Node<ASTNode>> filteredNodes = new ArrayList<>();
         for (Node<ASTNode> node : nodes) {
@@ -757,6 +713,7 @@ public class QueryEvaluator {
         return filteredNodes;
     }
 
+    @Deprecated
     private boolean matchType(NodeType nodeType, String predType) {
         if (predType.equals("procedure")) {
             return nodeType == NodeType.PROCEDURE;

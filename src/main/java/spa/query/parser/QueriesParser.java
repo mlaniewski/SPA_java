@@ -12,15 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public class QueriesParser {
-    private String query;
     private QueryTree queryTree;
 
-    public QueriesParser(String query) {
-        this.query = query;
+    public QueriesParser() {
         this.queryTree = new QueryTree();
     }
 
-    public void parseQuery() throws QueryException, PKBException {
+    public void parse(String query) throws QueryException, PKBException {
         List<String> tokens = Arrays.asList(query.split(";"));
         Iterator<String> tokenIt = tokens.iterator();
         while (tokenIt.hasNext()) {

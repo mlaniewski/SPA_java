@@ -7,7 +7,6 @@ import java.util.Objects;
 public class ASTNode {
     private static int nextId;
     private static Map<Integer, Node<ASTNode>> nodes = new HashMap<>();
-    private Node<ASTNode> nodeIter;
     private HashMap<NodeParamType, String> params = new HashMap<>();
     private NodeType nodeType;
     private int lineNumber;
@@ -27,13 +26,8 @@ public class ASTNode {
         return params.get(type);
     }
 
-    public Node<ASTNode> getTreeIterator() {
-        return nodeIter;
-    }
-
     public void setTreeIterator(Node<ASTNode> node) {
-        this.nodeIter = node;
-        this.nodes.put(id, node);
+        nodes.put(id, node);
     }
 
     public static Node<ASTNode> getNodeById(Integer id) {
@@ -54,6 +48,17 @@ public class ASTNode {
 
     public void setLineNumber(int lineNumber) {
         this.lineNumber = lineNumber;
+    }
+
+    public String nodeToString() {
+        switch (nodeType) {
+            case PROCEDURE:
+            case VARIABLE:
+            case CONSTANT:
+                return getParam(NodeParamType.NAME);
+            default:
+                return String.valueOf(lineNumber);
+        }
     }
 
     @Override
