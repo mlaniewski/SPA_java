@@ -11,11 +11,11 @@ import spa.tree.Node;
 
 import java.util.List;
 
-public class Next implements ClosureResultEvaluator {
+public class Parent implements ClosureResultEvaluator {
     private PKB pkb;
     private NodeFilter filter;
 
-    public Next(PKB pkb) {
+    public Parent(PKB pkb) {
         this.pkb = pkb;
         this.filter = new NodeFilter();
     }
@@ -31,16 +31,16 @@ public class Next implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (lhsLineNum != 0 && rhsLineNum != 0) {
-            closureResult.setBoolResult(pkb.checkNext(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
+            closureResult.setBoolResult(pkb.checkParent(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
         } else if (lhsLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getNext(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getChildren(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
         } else if (rhsLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getPrev(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getParent(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
             closureResult.setBoolResult(false);
             for (Node<ASTNode> node : nodes) {
-                if (!pkb.getNext(node, _transient).isEmpty()) {
+                if (!pkb.getParent(node, _transient).isEmpty()) {
                     closureResult.setBoolResult(true);
                     break;
                 }
@@ -59,14 +59,14 @@ public class Next implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (rhsLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getPrev(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getParent(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
             for (Node<ASTNode> val : allVals) {
-                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
+                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getParent(val, _transient), p1.getType());
                 for (Node<ASTNode> res : results) {
                     closureResult.addValue(res.getData().nodeToString());
                 }
@@ -85,14 +85,14 @@ public class Next implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (lhsLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getNext(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getChildren(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
         } else { // _
-            List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
+            List<Node<ASTNode>> allVals = filter.filterNodesByType(pkb.getAllValues("statement"), "if", "while");
             for (Node<ASTNode> val : allVals) {
-                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getNext(val, _transient), p2.getType());
+                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getChildren(val, _transient), p2.getType());
                 for (Node<ASTNode> res : results) {
                     closureResult.addValue(res.getData().nodeToString());
                 }
@@ -104,16 +104,16 @@ public class Next implements ClosureResultEvaluator {
     @Override
     public ClosureResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
         ClosureResult closureResult = new ClosureResult();
-        List<Node<ASTNode>> allPVals = filter.filterNodesByType(pkb.getAllValues("statement"), p1.getType());
+        List<Node<ASTNode>> allPVals = filter.filterNodesByType(filter.filterNodesByType(pkb.getAllValues("statement"), "if", "while"), p1.getType());
         for (Node<ASTNode> val : allPVals) {
-            List<Node<ASTNode>> pResults = filter.filterNodesByType(pkb.getNext(val, _transient), p2.getType());
+            List<Node<ASTNode>> pResults = filter.filterNodesByType(pkb.getChildren(val, _transient), p2.getType());
             for (Node<ASTNode> r : pResults) {
                 closureResult.addPq(val.getData().nodeToString(), r.getData().nodeToString());
             }
         }
         List<Node<ASTNode>> allQVals = filter.filterNodesByType(pkb.getAllValues("statement"), p2.getType());
         for (Node<ASTNode> val : allQVals) {
-            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
+            List<Node<ASTNode>>  qResults = filter.filterNodesByType(pkb.getParent(val, _transient), p1.getType());
             for (Node<ASTNode> r : qResults) {
                 closureResult.addQp(val.getData().nodeToString(), r.getData().nodeToString());
             }

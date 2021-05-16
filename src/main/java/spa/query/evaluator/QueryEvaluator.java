@@ -4,12 +4,9 @@ import spa.common.*;
 import spa.exception.PKBException;
 import spa.pkb.PKB;
 import spa.query.parser.QueryTree;
-import spa.relation.Next;
-import spa.relation.RelationResultEvaluator;
+import spa.relation.*;
 import spa.tree.ASTNode;
 import spa.tree.Node;
-import spa.tree.NodeParamType;
-import spa.tree.NodeType;
 
 import java.util.*;
 
@@ -27,7 +24,12 @@ public class QueryEvaluator {
     private Map<Integer, Set<String>> possibleValues;
     private List<List<String>> resultTable;
     //relations
-    private RelationResultEvaluator next;
+    private ClosureResultEvaluator next;
+    private ClosureResultEvaluator follows;
+    private ClosureResultEvaluator parent;
+    private ClosureResultEvaluator calls;
+    private ClosureResultEvaluator uses;
+    private ClosureResultEvaluator modifies;
 
     public QueryEvaluator(QueryTree queryTree, PKB pkb) {
         this.queryTree = queryTree;
@@ -41,6 +43,11 @@ public class QueryEvaluator {
         this.possibleValues = new HashMap<>();
         this.resultTable = new LinkedList<>();
         this.next = new Next(pkb);
+        this.follows = new Follows(pkb);
+        this.parent = new Parent(pkb);
+        this.calls = new Calls(pkb);
+        this.uses = new Uses(pkb);
+        this.modifies = new Modifies(pkb);
     }
 
     public void prepareResults() throws PKBException {
@@ -154,7 +161,7 @@ public class QueryEvaluator {
                 List<Node<ASTNode>> allVals = pkb.getAllValues(pred.getType());
                 for (Node<ASTNode> val : allVals) {
                     possibleValues.computeIfAbsent(i, k -> new HashSet<>());
-                    possibleValues.get(i).add(nodeToString(val));
+                    possibleValues.get(i).add(val.getData().nodeToString());
                 }
                 i++;
             }
@@ -214,301 +221,67 @@ public class QueryEvaluator {
             }
         }
 
-        // sprawdzam czy lhs i rhs sa numerami linii
-        int lhsLineNum = 0, rhsLineNum = 0;
-        try {
-            lhsLineNum = Integer.valueOf(closure.getLhs());
-        } catch (NumberFormatException e) { }
-        try {
-            rhsLineNum = Integer.valueOf(closure.getRhs());
-        } catch (NumberFormatException e) { }
-
-        // sprawdzam czy lhs i rhs sa nazwami
-        String lhsName = "", rhsName = "";
-        if (closure.getLhs().startsWith("\"")) {
-            lhsName = closure.getLhs().substring(1, closure.getLhs().length() - 1);
-        }
-        if (closure.getRhs().startsWith("\"")) {
-            rhsName = closure.getRhs().substring(1, closure.getRhs().length() - 1);
-        }
-
         if (p1.getType().isEmpty() && p2.getType().isEmpty()) { // 0 predykatow
             if (relation.equals("next")) {
-                closureResult = next.getResultWhenNoPredicate(lhsLineNum, rhsLineNum, _transient);
+                closureResult = next.getResultWhenNoPredicate(closure, _transient);
             }
             if (relation.equals("follows")) {
-                if (lhsLineNum != 0 && rhsLineNum != 0) {
-                    closureResult.setBoolResult(pkb.checkFollows(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
-                } else if (lhsLineNum != 0) {
-                    closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
-                } else if (rhsLineNum != 0) {
-                    closureResult.setBoolResult(!pkb.getFollowed(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
-                } else {
-                    List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
-                    closureResult.setBoolResult(false);
-                    for (Node<ASTNode> node : nodes) {
-                        if (!pkb.getFollowing(node, _transient).isEmpty()) {
-                            closureResult.setBoolResult(true);
-                            break;
-                        }
-                    }
-                }
+                closureResult = follows.getResultWhenNoPredicate(closure, _transient);
             }
             if (relation.equals("parent")) {
-                if (lhsLineNum != 0 && rhsLineNum != 0) {
-                    closureResult.setBoolResult(pkb.checkParent(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
-                } else if (lhsLineNum != 0) {
-                    closureResult.setBoolResult(!pkb.getChildren(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
-                } else if (rhsLineNum != 0) {
-                    closureResult.setBoolResult(!pkb.getParent(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
-                } else {
-                    List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
-                    closureResult.setBoolResult(false);
-                    for (Node<ASTNode> node : nodes) {
-                        if (!pkb.getParent(node, _transient).isEmpty()) {
-                            closureResult.setBoolResult(true);
-                            break;
-                        }
-                    }
-                }
+                closureResult = parent.getResultWhenNoPredicate(closure, _transient);
             }
             if (relation.equals("calls")) {
-                if (!lhsName.isEmpty() && !rhsName.isEmpty()) {
-                    closureResult.setBoolResult(pkb.checkCalls(pkb.getProcedureByName(lhsName), pkb.getProcedureByName(rhsName), _transient));
-                } else if (!lhsName.isEmpty()) {
-                    closureResult.setBoolResult(!pkb.getCallees(pkb.getProcedureByName(lhsName), _transient).isEmpty());
-                } else if (!rhsName.isEmpty()) {
-                    closureResult.setBoolResult(!pkb.getCallers(pkb.getProcedureByName(rhsName), _transient).isEmpty());
-                } else {
-                    List<Node<ASTNode>> nodes = pkb.getAllValues("procedure");
-                    closureResult.setBoolResult(false);
-                    for (Node<ASTNode> node : nodes) {
-                        if (!pkb.getCallees(node, _transient).isEmpty()) {
-                            closureResult.setBoolResult(true);
-                            break;
-                        }
-                    }
-                }
+                closureResult = calls.getResultWhenNoPredicate(closure, _transient);
             }
             if (relation.equals("uses")) {
-                if ((lhsLineNum != 0 || !lhsName.isEmpty()) && !rhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(pkb.checkUses(n, rhsName));
-                } else if (lhsLineNum != 0 || !lhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(!pkb.getUsed(n).isEmpty());
-                } else if (!rhsName.isEmpty()) {
-                    closureResult.setBoolResult(!pkb.getUsing(rhsName).isEmpty());
-                } else {
-                    List<String> vars = pkb.getAllVariables();
-                    closureResult.setBoolResult(false);
-                    for (String var : vars) {
-                        if (!pkb.getUsing(var).isEmpty()) {
-                            closureResult.setBoolResult(true);
-                            break;
-                        }
-                    }
-                }
+                closureResult = uses.getResultWhenNoPredicate(closure, _transient);
             }
             if (relation.equals("modifies")) {
-                if ((lhsLineNum != 0 || !lhsName.isEmpty()) && !rhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(pkb.checkModifies(n, rhsName));
-                } else if (lhsLineNum != 0 || !lhsName.isEmpty()) {
-                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-                    closureResult.setBoolResult(!pkb.getModified(n).isEmpty());
-                } else if (!rhsName.isEmpty()) {
-                    closureResult.setBoolResult(!pkb.getModifying(rhsName).isEmpty());
-                } else {
-                    List<String> vars = pkb.getAllVariables();
-                    closureResult.setBoolResult(false);
-                    for (String var : vars) {
-                        if (!pkb.getModifying(var).isEmpty()) {
-                            closureResult.setBoolResult(true);
-                            break;
-                        }
-                    }
-                }
+                closureResult = modifies.getResultWhenNoPredicate(closure, _transient);
             }
             closureResult.setResultType("BOOL");
         }
         else if (p2.getType().isEmpty()) { // predykat z lewej
             if (relation.equals("next")) {
-                closureResult = next.getResultWhenLeftPredicate(p1, rhsLineNum, _transient);
+                closureResult = next.getResultWhenLeftPredicate(closure, p1, _transient);
             }
             if (relation.equals("follows")) {
-                if (rhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowed(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowed(val, _transient), p1.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = follows.getResultWhenLeftPredicate(closure, p1, _transient);
             }
             if (relation.equals("parent")) {
-                if (rhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getParent(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getParent(val, _transient), p1.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = parent.getResultWhenLeftPredicate(closure, p1, _transient);
             }
             if (relation.equals("calls")) {
-                if (!rhsName.isEmpty()) { // nazwa procedury
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getCallers(pkb.getProcedureByName(rhsName), _transient), p1.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("procedure");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getCallers(val, _transient), p1.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = calls.getResultWhenLeftPredicate(closure, p1, _transient);
             }
             if (relation.equals("uses")) {
-                if (!rhsName.isEmpty()) { // zmienna
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getUsing(rhsName), p1.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<String> allVars = pkb.getAllVariables();
-                    for (String var : allVars) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getUsing(var), p1.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = uses.getResultWhenLeftPredicate(closure, p1, _transient);
             }
             if (relation.equals("modifies")) {
-                if (!rhsName.isEmpty()) { // zmienna
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getModifying(rhsName), p1.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<String> allVars = pkb.getAllVariables();
-                    for (String var : allVars) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getModifying(var), p1.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-
-                }
+                closureResult = modifies.getResultWhenLeftPredicate(closure, p1, _transient);
             }
             closureResult.setResultType("SET");
             closureResult.setP(p1.getValue());
         }
         else if (p1.getType().isEmpty()) { // predykat z prawej
             if (relation.equals("next")) {
-                closureResult = next.getResultWhenRightPredicate(p2, lhsLineNum, _transient);
+                closureResult = next.getResultWhenRightPredicate(closure, p2, _transient);
             }
             if (relation.equals("follows")) {
-                if (lhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowing(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getFollowing(val, _transient), p2.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = follows.getResultWhenRightPredicate(closure, p2, _transient);
             }
             if (relation.equals("parent")) {
-                if (lhsLineNum != 0) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getChildren(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = filterNodesByType(pkb.getAllValues("statement"), "if", "while");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getChildren(val, _transient), p2.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = parent.getResultWhenRightPredicate(closure, p2, _transient);
             }
             if (relation.equals("calls")) {
-                if (!lhsName.isEmpty()) { // numer linii
-                    List<Node<ASTNode>> results = filterNodesByType(pkb.getCallees(pkb.getProcedureByName(lhsName), _transient), p2.getType());
-                    for (Node<ASTNode> res : results) {
-                        closureResult.addValue(nodeToString(res));
-                    }
-                } else { // _
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("procedure");
-                    for (Node<ASTNode> val : allVals) {
-                        List<Node<ASTNode>> results = filterNodesByType(pkb.getCallees(val, _transient), p2.getType());
-                        for (Node<ASTNode> res : results) {
-                            closureResult.addValue(nodeToString(res));
-                        }
-                    }
-                }
+                closureResult = calls.getResultWhenRightPredicate(closure, p2, _transient);
             }
             if (relation.equals("uses")) {
-                if (lhsLineNum != 0 || !lhsName.isEmpty()) { // stmt lub proc
-                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-                    List<String> results = pkb.getUsed(n);
-                    for (String res : results) {
-                        closureResult.addValue(res);
-                    }
-                } else { // _
-                    List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    allVals.addAll(procNodes);
-                    for (Node<ASTNode> val : allVals) {
-                        List<String> results = pkb.getUsed(val);
-                        for (String res : results) {
-                            closureResult.addValue(res);
-                        }
-                    }
-                }
+                closureResult = uses.getResultWhenRightPredicate(closure, p2, _transient);
             }
             if (relation.equals("modifies")) {
-                if (lhsLineNum != 0 || !lhsName.isEmpty()) { // stmt lub proc
-                    Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-                    List<String> results = pkb.getModified(n);
-                    for (String res : results) {
-                        closureResult.addValue(res);
-                    }
-                } else { // _
-                    List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
-                    List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                    allVals.addAll(procNodes);
-                    for (Node<ASTNode> val : allVals) {
-                        List<String> results = pkb.getModified(val);
-                        for (String res : results) {
-                            closureResult.addValue(res);
-                        }
-                    }
-                }
+                closureResult = modifies.getResultWhenRightPredicate(closure, p2, _transient);
             }
             closureResult.setResultType("SET");
             closureResult.setP(p2.getValue());
@@ -518,92 +291,19 @@ public class QueryEvaluator {
                 closureResult = next.getResultWhenBothPredicates(p1, p2, _transient);
             }
             if (relation.equals("follows")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("statement"), p1.getType());
-                for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getFollowing(val, _transient), p2.getType());
-                    for (Node<ASTNode> r : pResults) {
-                        closureResult.addPq(nodeToString(val), nodeToString(r));
-                    }
-                }
-                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("statement"), p2.getType());
-                for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getFollowed(val, _transient), p1.getType());
-                    for (Node<ASTNode> r : qResults) {
-                        closureResult.addQp(nodeToString(val), nodeToString(r));
-                    }
-                }
+                closureResult = follows.getResultWhenBothPredicates(p1, p2, _transient);
             }
             if (relation.equals("parent")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(filterNodesByType(pkb.getAllValues("statement"), "if", "while"), p1.getType());
-                for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getChildren(val, _transient), p2.getType());
-                    for (Node<ASTNode> r : pResults) {
-                        closureResult.addPq(nodeToString(val), nodeToString(r));
-                    }
-                }
-                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("statement"), p2.getType());
-                for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>>  qResults = filterNodesByType(pkb.getParent(val, _transient), p1.getType());
-                    for (Node<ASTNode> r : qResults) {
-                        closureResult.addQp(nodeToString(val), nodeToString(r));
-                    }
-                }
+                closureResult = parent.getResultWhenBothPredicates(p1, p2, _transient);
             }
             if (relation.equals("calls")) {
-                List<Node<ASTNode>> allPVals = filterNodesByType(pkb.getAllValues("procedure"), p1.getType());
-                for (Node<ASTNode> val : allPVals) {
-                    List<Node<ASTNode>> pResults = filterNodesByType(pkb.getCallees(val, _transient), p2.getType());
-                    for (Node<ASTNode> r : pResults) {
-                        closureResult.addPq(nodeToString(val), nodeToString(r));
-                    }
-                }
-                List<Node<ASTNode>> allQVals = filterNodesByType(pkb.getAllValues("procedure"), p2.getType());
-                for (Node<ASTNode> val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getCallers(val, _transient), p1.getType());
-                    for (Node<ASTNode> r : qResults) {
-                        closureResult.addQp(nodeToString(val), nodeToString(r));
-                    }
-                }
+                closureResult = calls.getResultWhenBothPredicates(p1, p2, _transient);
             }
             if (relation.equals("uses")) {
-                List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
-                List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                allVals.addAll(procNodes);
-
-                List<Node<ASTNode>> allPVals = filterNodesByType(allVals, p1.getType());
-                for (Node<ASTNode> val : allPVals) {
-                    List<String> pResults = pkb.getUsed(val);
-                    for (String r : pResults) {
-                        closureResult.addPq(nodeToString(val), r);
-                    }
-                }
-                List<String> allQVals = pkb.getAllVariables();
-                for (String val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getUsing(val), p1.getType());
-                    for (Node<ASTNode> r : qResults) {
-                        closureResult.addQp(val, nodeToString(r));
-                    }
-                }
+                closureResult = uses.getResultWhenBothPredicates(p1, p2, _transient);
             }
             if (relation.equals("modifies")) {
-                List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
-                List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
-                allVals.addAll(procNodes);
-
-                List<Node<ASTNode>> allPVals = filterNodesByType(allVals, p1.getType());
-                for (Node<ASTNode> val : allPVals) {
-                    List<String> pResults = pkb.getModified(val);
-                    for (String r : pResults) {
-                        closureResult.addPq(nodeToString(val), r);
-                    }
-                }
-                List<String> allQVals = pkb.getAllVariables();
-                for (String val : allQVals) {
-                    List<Node<ASTNode>> qResults = filterNodesByType(pkb.getModifying(val), p1.getType());
-                    for (Node<ASTNode> r : qResults) {
-                        closureResult.addQp(val, nodeToString(r));
-                    }
-                }
+                closureResult = modifies.getResultWhenBothPredicates(p1, p2, _transient);
             }
             closureResult.setResultType("MAP");
             closureResult.setP(p1.getValue());
@@ -680,64 +380,6 @@ public class QueryEvaluator {
         }
 
         return closureResult;
-    }
-
-    @Deprecated
-    private String nodeToString(Node<ASTNode> node) {
-        switch (node.getData().getNodeType()) {
-            case PROCEDURE:
-            case VARIABLE:
-            case CONSTANT:
-                return node.getData().getParam(NodeParamType.NAME);
-            default:
-                return String.valueOf(node.getData().getLineNumber());
-        }
-    }
-
-    @Deprecated
-    private List<Node<ASTNode>> filterNodesByType(List<Node<ASTNode>> nodes, String type) {
-        return filterNodesByType(nodes, type, "");
-    }
-
-    @Deprecated
-    private List<Node<ASTNode>> filterNodesByType(List<Node<ASTNode>> nodes, String type, String type2) {
-        List<Node<ASTNode>> filteredNodes = new ArrayList<>();
-        for (Node<ASTNode> node : nodes) {
-            boolean m1 = matchType(node.getData().getNodeType(), type);
-            boolean m2 = matchType(node.getData().getNodeType(), type2);
-            boolean e = type2.isEmpty();
-            if (e ? m1 : (m1 || m2)) {
-                filteredNodes.add(node);
-            }
-        }
-        return filteredNodes;
-    }
-
-    @Deprecated
-    private boolean matchType(NodeType nodeType, String predType) {
-        if (predType.equals("procedure")) {
-            return nodeType == NodeType.PROCEDURE;
-        } else if (predType.equals("statement")) {
-            return nodeType == NodeType.CALL
-                    || nodeType == NodeType.WHILE
-                    || nodeType == NodeType.IF
-                    || nodeType == NodeType.ASSIGN;
-        } else if (predType.equals("assign")) {
-            return nodeType == NodeType.ASSIGN;
-        }
-        else if (predType.equals("while")) {
-            return nodeType == NodeType.WHILE;
-        }
-        else if (predType.equals("if")) {
-            return nodeType == NodeType.IF;
-        } else if (predType.equals("var")) {
-            return nodeType == NodeType.VARIABLE;
-        } else if (predType.equals("call")) {
-            return nodeType == NodeType.CALL;
-        } else if (predType.equals("const")) {
-            return nodeType == NodeType.CONSTANT;
-        }
-        return false;
     }
 
     public List<String> getResults() {
