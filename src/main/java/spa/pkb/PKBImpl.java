@@ -56,38 +56,9 @@ public class PKBImpl implements PKB {
         this.ast = ast;
     }
 
-    public List<Node<ASTNode>> getProcedures() {
-        return ast.getProcedures();
-    }
-
-    public List<Node<ASTNode>> getWhiles() {
-        return ast.getWhiles();
-    }
-
-    public List<Node<ASTNode>> getIfs() {
-        return ast.getIfs();
-    }
-
-    public List<Node<ASTNode>> getAssignments() {
-        return ast.getAssignments();
-    }
-
-    public Set<String> getVariables() {
-        return variables;
-    }
-
-    //TODO to nie powinno byc tak
     @Override
     public Set<String> getConstants() {
         return constants;
-    }
-
-    public List<Node<ASTNode>> getCallNodes() {
-        return ast.getCallNodes();
-    }
-
-    public List<Node<ASTNode>> getProgramLines() {
-        return ast.getProgramLines();
     }
 
     private List<Node<ASTNode>> createNodeCollection(Set<Integer> set) {

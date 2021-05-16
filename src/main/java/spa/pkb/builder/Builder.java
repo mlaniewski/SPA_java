@@ -133,15 +133,15 @@ public class Builder {
 
         int nodeId = node.getData().getId();
         if (isStmt && !tempUiVector.isEmpty()) {
-            parent.put(nodeId, tempUiVector.get(tempUiVector.size()-1)); //(*parent)[(*node)->id] = tempUiVector.back();
+            parent.put(nodeId, tempUiVector.get(tempUiVector.size()-1));
             parentT.computeIfAbsent(nodeId, k -> new HashSet<>());
             for (Integer id : tempUiVector) {
-                parentT.get(nodeId).add(id); //(*parentT)[(*node)->id].insert(tempUiVector.begin(), tempUiVector.end());
+                parentT.get(nodeId).add(id);
             }
             children.computeIfAbsent(parent.get(nodeId), k -> new HashSet<>());
-            children.get(parent.get(nodeId)).add(nodeId); //(*children)[(*parent)[(*node)->id]].insert((*node)->id);
+            children.get(parent.get(nodeId)).add(nodeId);
             childrenT.computeIfAbsent(parent.get(nodeId), k -> new HashSet<>());
-            childrenT.get(parent.get(nodeId)).add(nodeId); //(*childrenT)[(*parent)[(*node)->id]].insert((*node)->id);
+            childrenT.get(parent.get(nodeId)).add(nodeId);
         }
         if (!isLeafNode) {
             if (isContainerNode) {
@@ -151,7 +151,7 @@ public class Builder {
                 initializeParentMap(child);
             }
             if (isContainerNode) {
-                tempUiVector.remove(tempUiVector.get(tempUiVector.size() - 1)); // tempUiVector.pop_back();
+                tempUiVector.remove(tempUiVector.get(tempUiVector.size() - 1));
             }
         }
     }
@@ -166,7 +166,7 @@ public class Builder {
             String variable = assignNodeIt.getData().getParam(NodeParamType.NAME);
             int nodeId = assignIt.getData().getId();
             modifies.computeIfAbsent(nodeId, k -> new HashSet<>());
-            modifies.get(nodeId).add(variable);// (*modifies)[(**asgnIt)->id].insert(variable);
+            modifies.get(nodeId).add(variable);
             initializeUsesAssignment(assignIt, assignIt);
         }
 
@@ -195,7 +195,7 @@ public class Builder {
             switch (node.getData().getNodeType()) {
                 case VARIABLE:
                     uses.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
-                    uses.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME)); //(*uses)[(*assignment)->id].insert((*it)->getParam(Name));
+                    uses.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME));
                     break;
                 default:
                     initializeUsesAssignment(assignNode, node);
@@ -211,20 +211,20 @@ public class Builder {
                     case WHILE:
                     case IF:
                         uses.computeIfAbsent(stmtNode.getData().getId(), k -> new HashSet<>());
-                        uses.get(stmtNode.getData().getId()).add(stmtNode.getData().getParam(NodeParamType.COND)); //(*uses)[(*stmtIt)->id].insert((*stmtIt)->getParam(Cond));
+                        uses.get(stmtNode.getData().getId()).add(stmtNode.getData().getParam(NodeParamType.COND));
                     case PROCEDURE:
                         initializeModifiesAndUsesContainers(stmtNode);
                     case ASSIGN:
                         modifies.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
-                        if (modifies.get(stmtNode.getData().getId()) != null) { //TODO dorobić więcej ifów tego typu
+                        if (modifies.get(stmtNode.getData().getId()) != null) {
                             for (String s : modifies.get(stmtNode.getData().getId())) {
-                                modifies.get(container.getData().getId()).add(s); //(*modifies)[(*container)->id].insert((*modifies)[(*stmtIt)->id].begin(), (*modifies)[(*stmtIt)->id].end());
+                                modifies.get(container.getData().getId()).add(s);
                             }
                         }
                         uses.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
-                        if (uses.get(stmtNode.getData().getId()) != null) { //TODO dorobić więcej ifów tego typu
+                        if (uses.get(stmtNode.getData().getId()) != null) {
                             for (String s : uses.get(stmtNode.getData().getId())) {
-                                uses.get(container.getData().getId()).add(s); //(*uses)[(*container)->id].insert((*uses)[(*stmtIt)->id].begin(), (*uses)[(*stmtIt)->id].end());
+                                uses.get(container.getData().getId()).add(s);
                             }
                         }
                 }
@@ -241,11 +241,11 @@ public class Builder {
         int caleeProcId = ast.getProcedureByName(call.getData().getParam(NodeParamType.CALLEE)).getData().getId();
         modifies.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
         for (String s : modifies.get(caleeProcId)) {
-            modifies.get(call.getData().getId()).add(s); //(*modifies)[(*call)->id].insert((*modifies)[caleeProcId].begin(), (*modifies)[caleeProcId].end());
+            modifies.get(call.getData().getId()).add(s);
         }
         uses.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
         for (String s : uses.get(caleeProcId)) {
-            uses.get(call.getData().getId()).add(s); //(*uses)[(*call)->id].insert((*uses)[caleeProcId].begin(), (*uses)[caleeProcId].end());
+            uses.get(call.getData().getId()).add(s);
         }
 
         Node<ASTNode> node = call;
@@ -258,11 +258,11 @@ public class Builder {
 
             modifies.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
             for (String s : modifies.get(call.getData().getId())) {
-                modifies.get(node.getData().getId()).add(s); //(*modifies)[(*node)->id].insert((*modifies)[(*call)->id].begin(), (*modifies)[(*call)->id].end());
+                modifies.get(node.getData().getId()).add(s);
             }
             uses.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
             for (String s : uses.get(call.getData().getId())) {
-                uses.get(node.getData().getId()).add(s); //(*uses)[(*node)->id].insert((*uses)[(*call)->id].begin(), (*uses)[(*call)->id].end());
+                uses.get(node.getData().getId()).add(s);
             }
 
         }

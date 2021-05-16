@@ -9,7 +9,6 @@ public class ASTNode {
     private static Map<Integer, Node<ASTNode>> nodes = new HashMap<>();
     private Node<ASTNode> nodeIter;
     private HashMap<NodeParamType, String> params = new HashMap<>();
-    //public?
     private NodeType nodeType;
     private int lineNumber;
     private Integer id;

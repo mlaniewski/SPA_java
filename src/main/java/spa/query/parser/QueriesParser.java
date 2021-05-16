@@ -111,9 +111,7 @@ public class QueriesParser {
         //====================
         // parse selector
         //====================
-        if (token.equals("<")) { //TODO ??
-
-        } else if (icompare(token, "boolean")) {
+        if (icompare(token, "boolean")) {
             token = tokensIt.next();
             queryTree.getSelector().setType("boolean");
         } else {

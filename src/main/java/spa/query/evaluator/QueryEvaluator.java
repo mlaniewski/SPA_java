@@ -101,13 +101,12 @@ public class QueryEvaluator {
         }
     }
 
-    //TODO to moze byc nie do konca poprawne
     private void findResult(int pred) {
-        if (pred >= possibleValues.size()) { // to jest do wywalenia jak beda juz ClosureResult zrobione
+        if (pred >= possibleValues.size()) {
             return;
         }
         if (possibleValues.get(pred) == null) {
-            return; //TODO a moze findResult(pred+1);
+            return;
         }
         for (String val : possibleValues.get(pred)) {
             boolean foundValue = true;
