@@ -16,36 +16,36 @@ import java.util.Scanner;
 
 public class SPA {
     public static void main(String[] args) throws QueryException, PKBException {
-        final String sourceFile = "tests/iteracja1/prog3.simple";
+        //final String sourceFile = "tests/iteracja1/prog3.simple";
+        if (args.length < 1) {
+            return;
+        }
+        final String sourceFile = args[0];
         Parser parser = new ParserImpl();
         AST ast = parser.parse(sourceFile);
 
-        ast.printTree();
+        //ast.printTree();
 
         Builder builder = new Builder(ast);
-
         PKB pkb = builder.buildPKB();
 
         System.out.println("Ready");
 
         Scanner sc = new Scanner(System.in);
-        while (true) {
-            String q1 = sc.nextLine();
-            String q2 = sc.nextLine();
-            String query = q1 + " " + q2;
+        String q1 = sc.nextLine();
+        String q2 = sc.nextLine();
+        String query = q1 + " " + q2;
 
-            QueriesParser queriesParser = new QueriesParser();
-            queriesParser.parse(query);
+        QueriesParser queriesParser = new QueriesParser();
+        queriesParser.parse(query);
 
-            QueryTree queryTree = queriesParser.getQueryTree();
+        QueryTree queryTree = queriesParser.getQueryTree();
 
-            QueryEvaluator evaluator = new QueryEvaluator(queryTree, pkb);
-            evaluator.prepareResults();
-            evaluator.evaluate();
+        QueryEvaluator evaluator = new QueryEvaluator(queryTree, pkb);
+        evaluator.prepareResults();
+        evaluator.evaluate();
 
-            QueryResultProjector projector = new QueryResultProjector();
-            projector.printResult(evaluator.getResults());
-        }
-
+        QueryResultProjector projector = new QueryResultProjector();
+        projector.printResult(evaluator.getResults());
     }
 }

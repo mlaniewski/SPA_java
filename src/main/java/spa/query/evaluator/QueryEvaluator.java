@@ -222,88 +222,96 @@ public class QueryEvaluator {
         }
 
         if (p1.getType().isEmpty() && p2.getType().isEmpty()) { // 0 predykatow
-            if (relation.equals("next")) {
-                closureResult = next.getResultWhenNoPredicate(closure, _transient);
-            }
-            if (relation.equals("follows")) {
-                closureResult = follows.getResultWhenNoPredicate(closure, _transient);
-            }
-            if (relation.equals("parent")) {
-                closureResult = parent.getResultWhenNoPredicate(closure, _transient);
-            }
-            if (relation.equals("calls")) {
-                closureResult = calls.getResultWhenNoPredicate(closure, _transient);
-            }
-            if (relation.equals("uses")) {
-                closureResult = uses.getResultWhenNoPredicate(closure, _transient);
-            }
-            if (relation.equals("modifies")) {
-                closureResult = modifies.getResultWhenNoPredicate(closure, _transient);
+            switch (relation) {
+                case "next":
+                    closureResult = next.getResultWhenNoPredicate(closure, _transient);
+                    break;
+                case "follows":
+                    closureResult = follows.getResultWhenNoPredicate(closure, _transient);
+                    break;
+                case "parent":
+                    closureResult = parent.getResultWhenNoPredicate(closure, _transient);
+                    break;
+                case "calls":
+                    closureResult = calls.getResultWhenNoPredicate(closure, _transient);
+                    break;
+                case "uses":
+                    closureResult = uses.getResultWhenNoPredicate(closure, _transient);
+                    break;
+                case "modifies":
+                    closureResult = modifies.getResultWhenNoPredicate(closure, _transient);
+                    break;
             }
             closureResult.setResultType("BOOL");
         }
         else if (p2.getType().isEmpty()) { // predykat z lewej
-            if (relation.equals("next")) {
-                closureResult = next.getResultWhenLeftPredicate(closure, p1, _transient);
-            }
-            if (relation.equals("follows")) {
-                closureResult = follows.getResultWhenLeftPredicate(closure, p1, _transient);
-            }
-            if (relation.equals("parent")) {
-                closureResult = parent.getResultWhenLeftPredicate(closure, p1, _transient);
-            }
-            if (relation.equals("calls")) {
-                closureResult = calls.getResultWhenLeftPredicate(closure, p1, _transient);
-            }
-            if (relation.equals("uses")) {
-                closureResult = uses.getResultWhenLeftPredicate(closure, p1, _transient);
-            }
-            if (relation.equals("modifies")) {
-                closureResult = modifies.getResultWhenLeftPredicate(closure, p1, _transient);
+            switch (relation) {
+                case "next":
+                    closureResult = next.getResultWhenLeftPredicate(closure, p1, _transient);
+                    break;
+                case "follows":
+                    closureResult = follows.getResultWhenLeftPredicate(closure, p1, _transient);
+                    break;
+                case "parent":
+                    closureResult = parent.getResultWhenLeftPredicate(closure, p1, _transient);
+                    break;
+                case "calls":
+                    closureResult = calls.getResultWhenLeftPredicate(closure, p1, _transient);
+                    break;
+                case "uses":
+                    closureResult = uses.getResultWhenLeftPredicate(closure, p1, _transient);
+                    break;
+                case "modifies":
+                    closureResult = modifies.getResultWhenLeftPredicate(closure, p1, _transient);
+                    break;
             }
             closureResult.setResultType("SET");
             closureResult.setP(p1.getValue());
         }
         else if (p1.getType().isEmpty()) { // predykat z prawej
-            if (relation.equals("next")) {
-                closureResult = next.getResultWhenRightPredicate(closure, p2, _transient);
-            }
-            if (relation.equals("follows")) {
-                closureResult = follows.getResultWhenRightPredicate(closure, p2, _transient);
-            }
-            if (relation.equals("parent")) {
-                closureResult = parent.getResultWhenRightPredicate(closure, p2, _transient);
-            }
-            if (relation.equals("calls")) {
-                closureResult = calls.getResultWhenRightPredicate(closure, p2, _transient);
-            }
-            if (relation.equals("uses")) {
-                closureResult = uses.getResultWhenRightPredicate(closure, p2, _transient);
-            }
-            if (relation.equals("modifies")) {
-                closureResult = modifies.getResultWhenRightPredicate(closure, p2, _transient);
+            switch (relation) {
+                case "next":
+                    closureResult = next.getResultWhenRightPredicate(closure, p2, _transient);
+                    break;
+                case "follows":
+                    closureResult = follows.getResultWhenRightPredicate(closure, p2, _transient);
+                    break;
+                case "parent":
+                    closureResult = parent.getResultWhenRightPredicate(closure, p2, _transient);
+                    break;
+                case "calls":
+                    closureResult = calls.getResultWhenRightPredicate(closure, p2, _transient);
+                    break;
+                case "uses":
+                    closureResult = uses.getResultWhenRightPredicate(closure, p2, _transient);
+                    break;
+                case "modifies":
+                    closureResult = modifies.getResultWhenRightPredicate(closure, p2, _transient);
+                    break;
             }
             closureResult.setResultType("SET");
             closureResult.setP(p2.getValue());
         }
         else { // 2 predykaty
-            if (relation.equals("next")) {
-                closureResult = next.getResultWhenBothPredicates(p1, p2, _transient);
-            }
-            if (relation.equals("follows")) {
-                closureResult = follows.getResultWhenBothPredicates(p1, p2, _transient);
-            }
-            if (relation.equals("parent")) {
-                closureResult = parent.getResultWhenBothPredicates(p1, p2, _transient);
-            }
-            if (relation.equals("calls")) {
-                closureResult = calls.getResultWhenBothPredicates(p1, p2, _transient);
-            }
-            if (relation.equals("uses")) {
-                closureResult = uses.getResultWhenBothPredicates(p1, p2, _transient);
-            }
-            if (relation.equals("modifies")) {
-                closureResult = modifies.getResultWhenBothPredicates(p1, p2, _transient);
+            switch (relation) {
+                case "next":
+                    closureResult = next.getResultWhenBothPredicates(p1, p2, _transient);
+                    break;
+                case "follows":
+                    closureResult = follows.getResultWhenBothPredicates(p1, p2, _transient);
+                    break;
+                case "parent":
+                    closureResult = parent.getResultWhenBothPredicates(p1, p2, _transient);
+                    break;
+                case "calls":
+                    closureResult = calls.getResultWhenBothPredicates(p1, p2, _transient);
+                    break;
+                case "uses":
+                    closureResult = uses.getResultWhenBothPredicates(p1, p2, _transient);
+                    break;
+                case "modifies":
+                    closureResult = modifies.getResultWhenBothPredicates(p1, p2, _transient);
+                    break;
             }
             closureResult.setResultType("MAP");
             closureResult.setP(p1.getValue());
