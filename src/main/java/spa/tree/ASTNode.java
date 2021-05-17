@@ -67,6 +67,7 @@ public class ASTNode {
                 "params=" + params +
                 ", nodeType=" + nodeType +
                 ", id=" + id +
+                ", line number=" + lineNumber +
                 '}';
     }
 
