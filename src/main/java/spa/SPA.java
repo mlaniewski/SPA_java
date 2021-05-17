@@ -24,7 +24,7 @@ public class SPA {
         Parser parser = new ParserImpl();
         AST ast = parser.parse(sourceFile);
 
-        //ast.printTree();
+        ast.printTree(false);
 
         Builder builder = new Builder(ast);
         PKB pkb = builder.buildPKB();
@@ -32,20 +32,22 @@ public class SPA {
         System.out.println("Ready");
 
         Scanner sc = new Scanner(System.in);
-        String q1 = sc.nextLine();
-        String q2 = sc.nextLine();
-        String query = q1 + " " + q2;
+        while (true) {
+            String q1 = sc.nextLine();
+            String q2 = sc.nextLine();
+            String query = q1 + " " + q2;
 
-        QueriesParser queriesParser = new QueriesParser();
-        queriesParser.parse(query);
+            QueriesParser queriesParser = new QueriesParser();
+            queriesParser.parse(query);
 
-        QueryTree queryTree = queriesParser.getQueryTree();
+            QueryTree queryTree = queriesParser.getQueryTree();
 
-        QueryEvaluator evaluator = new QueryEvaluator(queryTree, pkb);
-        evaluator.prepareResults();
-        evaluator.evaluate();
+            QueryEvaluator evaluator = new QueryEvaluator(queryTree, pkb);
+            evaluator.prepareResults();
+            evaluator.evaluate();
 
-        QueryResultProjector projector = new QueryResultProjector();
-        projector.printResult(evaluator.getResults());
+            QueryResultProjector projector = new QueryResultProjector();
+            projector.printResult(evaluator.getResults());
+        }
     }
 }

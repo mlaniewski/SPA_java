@@ -148,23 +148,28 @@ public class AST {
     }
 
 
-    public void printTree() {
+    public void printTree(boolean full) {
         Node<ASTNode> node = getTree();
         System.out.println(node.getData());
-        printTree(node.getChildren().get(0), 1);
+        printTree(node.getChildren().get(0), 1, full);
     }
 
-    private void printTree(Node<ASTNode> node, int depth) {
+    private void printTree(Node<ASTNode> node, int depth, boolean full) {
         String cut = "";
         for (int i=0; i<depth; i++) cut += " | ";
         if (depth > 0) cut += " └ ";
 
-        System.out.println(cut + node.getData());
-
+        if (full) {
+            System.out.println(cut + node.getData());
+        } else {
+            if (node.getData().getLineNumber() != 0) {
+                System.out.println(cut + node.getData());
+            }
+        }
         depth++;
 
         for (Node<ASTNode> astNode : node.getChildren()) {
-            printTree(astNode, depth);
+            printTree(astNode, depth, full);
         }
     }
 }
