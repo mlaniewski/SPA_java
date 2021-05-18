@@ -1,0 +1,36 @@
+procedure p;
+Select p such that Calls("First", p)
+procedure p;
+Select p such that Calls("Second", p)
+procedure p;
+Select p such that Calls("Third", p)
+procedure p;
+Select p such that Calls(p, "Third")
+procedure p;
+Select p such that Calls(p, "Fourth")
+procedure p;
+Select p such that Calls*("First", p)
+procedure p;
+Select p such that Calls*("Second", p)
+procedure p;
+Select p such that Calls*(p, "Third")
+procedure p;
+Select p such that Calls*(p, "Fourth")
+prog_line n2;
+Select BOOLEAN such that Next(1, 2)
+prog_line n2;
+Select BOOLEAN such that Next(1, 3)
+prog_line n2;
+Select BOOLEAN such that Next(7, 11)
+prog_line n2;
+Select BOOLEAN such that Next*(1, 3)
+prog_line n2;
+Select n2 such that Next*(n2, 5)
+prog_line n2;
+Select n2 such that Next*(n2, 8)
+prog_line n2;
+Select n2 such that Next*(9, n2)
+prog_line n2;
+Select n2 such that Next*(5, n2)
+procedure p;
+Select p such that Calls*("First", p) and Uses(p, "a")

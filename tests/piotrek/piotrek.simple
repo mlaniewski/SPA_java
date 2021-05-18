@@ -1,0 +1,26 @@
+procedure First {
+    a = 1;
+    b = a * a;
+    if a then {
+        while a {
+            a = a - 1;
+            c = b + 1; }
+        call Second; }
+    else {
+        a = d + t;
+        call Fourth;
+        c = c - 1; }
+    b = a + c; }
+
+procedure Second {
+    while c {
+        a = a + 1;
+        b = a * b;
+        call Third; }
+    c = 3; }
+
+procedure Third {
+    c = a + b; }
+
+procedure Fourth {
+    a = c + b; }
