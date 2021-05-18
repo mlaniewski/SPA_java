@@ -20,6 +20,10 @@ public class Next implements ClosureResultEvaluator {
         this.filter = new NodeFilter();
     }
 
+    /*
+        prog_line n2;
+        Select BOOLEAN such that Next(1, 2)
+     */
     @Override
     public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws PKBException {
         // sprawdzam czy lhs i rhs sa numerami linii
@@ -49,6 +53,10 @@ public class Next implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        prog_line n2;
+        Select n2 such that Next*(n2, 5)
+     */
     @Override
     public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws PKBException {
         // sprawdzam czy rhs sa numerami linii
@@ -75,6 +83,10 @@ public class Next implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        prog_line n2;
+        Select n2 such that Next*(9, n2)
+     */
     @Override
     public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws PKBException {
         // sprawdzam czy lhs sa numerami linii
@@ -100,7 +112,10 @@ public class Next implements ClosureResultEvaluator {
         }
         return closureResult;
     }
-
+    /*
+        while w; assign a;
+        Select a pattern a("a", _) such that Next(w, a)
+     */
     @Override
     public ClosureResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
         ClosureResult closureResult = new ClosureResult();
