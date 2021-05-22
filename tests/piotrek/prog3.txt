@@ -1,0 +1,87 @@
+procedure p;
+Select p such that Calls(p, "Triangle")
+Circle,Rectangle
+procedure p;
+Select p such that Calls(p, "Hexagon")
+Circle
+procedure p;
+Select p such that Calls(p, "Circle")
+none
+procedure p;
+Select p such that Calls("Circle", p)
+Hexagon,Rectangle,Triangle
+procedure p;
+Select p such that Calls("Rectangle", p)
+Triangle
+procedure p;
+Select p such that Calls("Hexagon", p)
+none
+procedure p;
+Select p such that Calls*(p, "Triangle")
+Circle,Rectangle
+procedure p;
+Select p such that Calls*(p, "Hexagon")
+Circle
+procedure p;
+Select p such that Calls*(p, "Circle")
+none
+procedure p;
+Select p such that Calls*("Circle", p)
+Hexagon,Rectangle,Triangle
+procedure p;
+Select p such that Calls*("Rectangle", p)
+Triangle
+procedure p;
+Select p such that Calls*("Hexagon", p)
+none
+prog_line n2;
+Select BOOLEAN such that Next(1, 2)
+true
+prog_line n2;
+Select BOOLEAN such that Next(6, 8)
+false
+prog_line n2;
+Select BOOLEAN such that Next(8, 9)
+true
+prog_line n2;
+Select BOOLEAN such that Next(10, 11)
+true
+prog_line n2;
+Select BOOLEAN such that Next(12, 10)
+true
+prog_line n2;
+Select BOOLEAN such that Next(12, 11)
+false
+prog_line n2;
+Select BOOLEAN such that Next(13, 14)
+false
+prog_line n2;
+Select BOOLEAN such that Next(17, 18)
+false
+prog_line n2;
+Select BOOLEAN such that Next(23, 27)
+true
+prog_line n2;
+Select BOOLEAN such that Next*(9, 9)
+false
+prog_line n2;
+Select BOOLEAN such that Next*(10, 10)
+true
+prog_line n2;
+Select BOOLEAN such that Next*(12, 12)
+true
+prog_line n2;
+Select BOOLEAN such that Next*(20, 20)
+true
+prog_line n2;
+Select BOOLEAN such that Next*(13, 16)
+false
+prog_line n2;
+Select BOOLEAN such that Next*(25, 27)
+true
+procedure p;
+Select p such that Calls*("Circle", p) and Modifies(p, "c")
+Rectangle,Triangle
+procedure p;
+Select p such that Calls("Circle", p) and Modifies(p, "c") and Uses(p, "a")
+Rectangle,Triangle
