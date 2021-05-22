@@ -20,6 +20,10 @@ public class Calls implements ClosureResultEvaluator {
         this.filter = new NodeFilter();
     }
 
+    /*
+        prog_line n;
+        Select BOOLEAN such that Calls("Circle", "Rectangle")
+     */
     @Override
     public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws PKBException {
         // sprawdzam czy lhs i rhs sa nazwami, czyli są w formacie "%s"
@@ -51,6 +55,10 @@ public class Calls implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        procedure p;
+        Select p such that Calls(p, "Third")
+     */
     @Override
     public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws PKBException {
         // sprawdzam czy rhs sa nazwami, czyli są w formacie "%s"
@@ -77,6 +85,10 @@ public class Calls implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        procedure p;
+        Select p such that Calls("First", p)
+     */
     @Override
     public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws PKBException {
         // sprawdzam czy lhs i rhs sa nazwami, czyli są w formacie "%s"
@@ -103,6 +115,10 @@ public class Calls implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        procedure p1, p2; prog_line n;
+        Select n such that Calls(p1, p2)
+     */
     @Override
     public ClosureResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
         ClosureResult closureResult = new ClosureResult();

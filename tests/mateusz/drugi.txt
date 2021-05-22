@@ -1,0 +1,21 @@
+assign a;
+Select a pattern a("z", _)
+none
+assign a;
+Select a pattern a("y", _"x * y"_)
+1
+assign a;
+Select a pattern a("y", _"x + x"_)
+none
+assign a;
+Select a pattern a("y", _"y * z"_)
+none
+assign a;
+Select a pattern a("y", _)
+1
+assign a;
+Select a pattern a(_, _"x * y * z + x"_)
+none
+assign a;
+Select a pattern a(_, "z * 5")
+none

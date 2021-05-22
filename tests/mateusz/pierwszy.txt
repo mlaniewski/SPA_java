@@ -1,0 +1,101 @@
+while w;
+Select w such that Parent(w, 7)
+none
+if ifs;
+Select ifs such that Follows(5, ifs)
+6 => none
+if ifs;
+Select ifs such that Follows(_, ifs)
+13
+call c;
+Select c such that Follows*(1, c)
+12 => none
+assign a;
+Select a such that Parent*(4, a)
+11,5,7,8,9
+stmt s;
+Select s such that Modifies(s, "i")
+11,12,13,14,17,3,4
+variable v;
+Select v such that Uses("p", v)
+i,x,y,z
+procedure p;
+Select p such that Calls(p, "q")
+Example, p
+procedure p;
+Select p such that Calls*("Example", p)
+p,q
+prog_line n;
+Select n such that Next(4, n)
+12,5
+prog_line n;
+Select n such that Next*(n, 4)
+1,10,11,2,3,4,5,6,7,8,9
+assign a;
+Select a pattern a("z", _"x+i"_)
+none
+assign a;
+Select a pattern a(_, _"x + 1"_)
+18,23,7
+assign a;
+Select a pattern a(_, " 3  +  2 ")
+none
+assign a;
+Select a pattern a("i", _)
+11,17,3
+assign a;
+Select a pattern a(_, "x-1")
+5
+assign a;
+Select a pattern a(_, "z * 3 + 2 * y")
+15
+assign a;
+Select a pattern a(_, _"x"_)
+18,19,21,23,24,5,7,8,9
+assign a;
+Select a pattern a(_, _"i"_)
+11,17,21,9
+while w; assign a;
+Select a pattern a("i", _) such that Follows(w, a)
+none
+if ifstat;
+Select BOOLEAN pattern ifstat("x", _,_)
+true
+
+while w; variable v;
+Select w such that Modifies(w, v) with v.varName = "x"
+4,14 => none
+if ifs; variable v;
+Select v such that Uses(ifs, v) with ifs.stmt# = 22
+x,z
+procedure p, q;
+Select BOOLEAN such that Calls(p, q) with q.procName = "p" and p.procName = "Example"
+true => false
+if ifs; assign a1, a2; variable v1, v2;
+Select ifs such that Follows*(a1, ifs) and Follows*(ifs, a2) and Modifies(ifs, v1) and Uses(ifs, v2) with v1.varName = v2.varName
+6
+prog_line n; stmt s;
+Select s such that Next*(16, n) and Parent*(s, n)
+13,14
+prog_line n1, n2; variable v; call c;
+Select c such that Next*(n1, n2) and Modifies(n1, v) and Uses(n2, v) and Modifies(c, v)
+10,12,16
+
+assign a;
+Select a such that Modifies(a, "x") and Uses(a, "x")
+18,24,5
+assign a;
+Select a such that Uses(a, "x") and Modifies(a, "x")
+18,24,5
+if ifs; assign a;
+Select a such that Modifies(a, "z") and Parent(ifs, a)
+19,20,23,7
+if ifs; assign a;
+Select a such that Modifies(a, "z") such that Parent(ifs, a)
+19,20,23,7
+if ifs; assign a;
+Select a such that Uses(a, "x") such that Follows(ifs, a)
+9
+while w; assign a;
+Select a pattern a("i", _) such that Parent(w, a)
+11,17

@@ -20,6 +20,10 @@ public class Modifies implements ClosureResultEvaluator {
         this.filter = new NodeFilter();
     }
 
+    /*
+        stmt s;
+        Select s such that Modifies(10, "c")
+     */
     @Override
     public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws PKBException {
         // sprawdzam czy lhs sa numerami linii
@@ -59,6 +63,10 @@ public class Modifies implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        stmt s;
+        Select s such that Modifies(s, "c")
+     */
     @Override
     public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws PKBException {
         String rhsName = "";
@@ -84,6 +92,10 @@ public class Modifies implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        variable v;
+        Select v such that Modifies(21, v)
+     */
     @Override
     public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws PKBException {
         // sprawdzam czy lhs sa numerami linii
@@ -119,6 +131,10 @@ public class Modifies implements ClosureResultEvaluator {
         return closureResult;
     }
 
+    /*
+        assign a; variable v;
+        Select v such that Modifies(a, v)
+     */
     @Override
     public ClosureResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
         ClosureResult closureResult = new ClosureResult();
