@@ -123,6 +123,7 @@ public class PKBImpl implements PKB {
                 s = sIt.next();
             }
         } else {
+            s = sIt.next();
             if (!s.getData().equals(end.getData())) {
                 following.add(s);
             }

@@ -3,7 +3,7 @@ Select w such that Parent(w, 7)
 none
 if ifs;
 Select ifs such that Follows(5, ifs)
-6 => none
+6
 if ifs;
 Select ifs such that Follows(_, ifs)
 13
@@ -64,7 +64,7 @@ true
 
 while w; variable v;
 Select w such that Modifies(w, v) with v.varName = "x"
-4,14 => none
+4,14
 if ifs; variable v;
 Select v such that Uses(ifs, v) with ifs.stmt# = 22
 x,z

@@ -380,7 +380,7 @@ public class QueryEvaluator {
             closureResult.setResultType("SET");
             closureResult.setP(with.getLhsVarName());
             if (with.getRhsVarName().startsWith("\"")) {
-                closureResult.addValue(with.getRhsVarName().substring(1, with.getRhsVarName().length() - 2));
+                closureResult.addValue(with.getRhsVarName().substring(1, with.getRhsVarName().length() - 1));
             }
             else {
                 closureResult.addValue(with.getRhsVarName());
