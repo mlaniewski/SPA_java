@@ -95,7 +95,7 @@ Select a such that Modifies(a, "z") such that Parent(ifs, a)
 19,20,23,7
 if ifs; assign a;
 Select a such that Uses(a, "x") such that Follows(ifs, a)
-9
+21,9
 while w; assign a;
 Select a pattern a("i", _) such that Parent(w, a)
 11,17
