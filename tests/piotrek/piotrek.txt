@@ -53,7 +53,7 @@ procedure p;
 Select p such that Calls*("First", p) and Uses(p, "a")
 Second,Third
 procedure p;
-Select p such that Calls*("First", p) and Uses(p, "a")
+Select p such that Calls*("First", p) and Uses(p, "b")
 Fourth,Second,Third
 procedure p;
 Select p such that Calls*("First", p) and Modifies(p, "b")

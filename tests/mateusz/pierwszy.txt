@@ -9,7 +9,7 @@ Select ifs such that Follows(_, ifs)
 13
 call c;
 Select c such that Follows*(1, c)
-12 => none
+12
 assign a;
 Select a such that Parent*(4, a)
 11,5,7,8,9
@@ -59,9 +59,8 @@ while w; assign a;
 Select a pattern a("i", _) such that Follows(w, a)
 none
 if ifstat;
-Select BOOLEAN pattern ifstat("x", _,_)
+Select BOOLEAN pattern ifstat("x", _, _)
 true
-
 while w; variable v;
 Select w such that Modifies(w, v) with v.varName = "x"
 4,14
@@ -70,7 +69,7 @@ Select v such that Uses(ifs, v) with ifs.stmt# = 22
 x,z
 procedure p, q;
 Select BOOLEAN such that Calls(p, q) with q.procName = "p" and p.procName = "Example"
-true => false
+true
 if ifs; assign a1, a2; variable v1, v2;
 Select ifs such that Follows*(a1, ifs) and Follows*(ifs, a2) and Modifies(ifs, v1) and Uses(ifs, v2) with v1.varName = v2.varName
 6
@@ -80,7 +79,6 @@ Select s such that Next*(16, n) and Parent*(s, n)
 prog_line n1, n2; variable v; call c;
 Select c such that Next*(n1, n2) and Modifies(n1, v) and Uses(n2, v) and Modifies(c, v)
 10,12,16
-
 assign a;
 Select a such that Modifies(a, "x") and Uses(a, "x")
 18,24,5

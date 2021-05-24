@@ -321,7 +321,7 @@ Select BOOLEAN such that Next*(10, 10)
 true
 prog_line n2;
 Select BOOLEAN such that Next*(12, 12)
-false
+true
 prog_line n2;
 Select BOOLEAN such that Next*(20, 20)
 true
