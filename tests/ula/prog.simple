@@ -11,7 +11,8 @@ procedure Iteracja1 {
 	d = a + b + 1 * c;
 	if d then {
 		c = c + a;
-		b = 6 - a * 2; }
+		b = 6 - a * 2;
+		f = 10; }
 	else {
-		d = 1; }
+		d = 1 + e; }
 
