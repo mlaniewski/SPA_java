@@ -77,11 +77,11 @@ procedure p;
 Select p such that Calls*("First", p) and Modifies(p, "c") and Uses(p, "d")
 none
 assign a; while w;
-Select a such that Modifies(a, “a”) and Parent*(w, a) and Next*(1, a)
-5  //------------- mamy 5,6? ---------------
+Select a such that Modifies(a, "a") and Parent*(w, a) and Next*(1, a)
+5
 assign a; while w;
-Select a such that Modifies(a, “a”) and Parent*(w, a)
-13,5  //------------- mamy 13,14,5,6? ---------------
+Select a such that Modifies(a, "a") and Parent*(w, a)
+13,5
 assign a;
 Select a such that Modifies(a, "c") and Uses(a, "c")
 10
