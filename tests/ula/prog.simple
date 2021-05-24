@@ -1,0 +1,17 @@
+procedure Iteracja1 {
+	a = 10;
+	b = a + 5;
+	c = a + b + 1;
+	while a {
+		a = a - 1;
+		if b then {
+			b = 10 + a; }
+		else {
+		   b = 11 * a; } }
+	d = a + b + 1 * c;
+	if d then {
+		c = c + a;
+		b = 6 - a * 2; }
+	else {
+		d = 1; }
+

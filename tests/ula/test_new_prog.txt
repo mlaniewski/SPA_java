@@ -1,0 +1,93 @@
+assign a, variable v;
+Select a such that Modifies (a, v)
+1,2,3,5,7,8,9,11,12,13
+assign a;
+Select a such that Modifies(a, "a")
+1,5
+assign a; variable v;
+Select v such that Modifies(a, v)
+a,b,c,d
+variable v;
+Select v such that Modifies("Iteracja1", v)
+a,b,c,d
+if ifstat;
+Select ifstat such that Modifies(ifstat, "d")
+10
+variable v; while w;
+Select w such that Modifies(w, v)
+4
+variable v;
+Select v such that Modifies(2, v)
+b
+variable v;
+Select v such that Modifies(3, v)
+c
+variable v;
+Select v such that Modifies(4, v)
+none
+variable v;
+Select v such that Modifies(10, v)
+none
+variable v;
+Select v such that Modifies(9, v)
+d
+while w;
+Select w such that Modifies(w, "a")
+4
+stmt s;
+Select s such that Modifies(s,"d")
+9,10,13
+while w;
+Select w such that Modifies(w, "b")
+4
+assign a; variable v;
+Select v such that Uses(a, v)
+a,b,c
+assign a;
+Select a such that Uses(a, "a")
+2, 3, 5, 7, 8, 9, 11, 12
+assign a, variable v;
+Select a such that Modifies(a, v) and Uses(a, v)
+5,11
+stmt s;
+Select s such that Uses(s,"d")
+10
+if ifstat;
+Select ifstat such that Uses(ifstat, "d")
+10
+if ifstat;
+Select ifstat such that Uses(ifstat, "a")
+6,10
+if ifstat;
+Select ifstat such that Uses(ifstat, "b")
+6
+if ifstat;
+Select ifstat such that Uses(ifstat, "c")
+10
+assign a; if ifstat;
+Select a such that Modifies(a, "a") and Parent(ifstat, a)
+none
+assign a; if ifstat;
+Select a such that Modifies (a, "b") and Parent (ifstat, a)
+7,8,12
+assign a; if ifstat;
+Select a such that Modifies (a, "d") and Parent (ifstat, a)
+13
+stmt s; if ifstat;
+Select s such that Modifies (s, "d") and Parent (ifstat, s)
+10,13
+stmt s; if ifstat;
+Select s such that Modifies (s, "b") and Parent (ifstat, s)
+6,7,8,10,12
+assign a; while w;
+Select a such that Modifies (a, "a") and Parent (w, a)
+5
+assign a; while w;
+Select w such that Modifies (a, "a") and Parent (w, a)
+4
+assign a; if ifstat;
+Select a such that Modifies (a, "a") such that Parent (ifstat, a)
+none
+assign a; if ifstat;
+Select a such that Modifies (a, "d") such that Parent (ifstat, a)
+13
