@@ -120,6 +120,7 @@ public class PKBImpl implements PKB {
             s = sIt.next();
         }
         if (_transient) {
+            following.add(s);
             while (sIt.hasNext()) {
                 following.add(s);
                 s = sIt.next();
