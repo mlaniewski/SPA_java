@@ -122,8 +122,8 @@ public class PKBImpl implements PKB {
         if (_transient) {
             following.add(s);
             while (sIt.hasNext()) {
-                following.add(s);
                 s = sIt.next();
+                following.add(s);
             }
         } else {
             following.add(s);

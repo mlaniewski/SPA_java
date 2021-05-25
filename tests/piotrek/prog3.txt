@@ -114,10 +114,10 @@ Select v such that Next*(n1, n2) and Modifies(n1, v) and Uses(n2, v) and Modifie
 a,c,d,t
 stmt s;
 Select s such that Follows*(9, s) and Uses(s, "d")
-10 // ---------------------- powinno byc 10, 13
+10, 13
 stmt s;
 Select s such that Follows*(14, s) and Uses(s, "c")
-none // ---------------------- powinno byc 16
+16
 stmt s; while w;
 Select s such that Follows*(19, s) and Parent(w, s)
-20 // ---------------------- powinno byc 20, 21
+20, 21
