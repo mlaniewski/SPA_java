@@ -85,3 +85,39 @@ Rectangle,Triangle
 procedure p;
 Select p such that Calls("Circle", p) and Modifies(p, "c") and Uses(p, "a")
 Rectangle,Triangle
+procedure p;
+Select p such that Calls("Circle", p) and Modifies(p, "c") and Uses(p, "c")
+Rectangle
+procedure p;
+Select p such that Calls*("Circle", p) and Uses(p, "t")
+Hexagon,Rectangle,Triangle
+procedure p;
+Select p such that Calls("Rectangle", p) and Modifies(p, "a")
+Triangle
+procedure p;
+Select p such that Calls*("Circle", p) and Modifies(p, "d") and Uses(p, "t")
+Rectangle,Triangle
+assign a; while w;
+Select a such that Modifies(a, "a") and Parent*(w, a) and Next*(1, a)
+none
+assign a; while w;
+Select a such that Modifies(a, "a") and Parent*(w, a)
+26
+assign a;
+Select a such that Modifies(a, "t") and Uses(a, "t")
+28
+prog_line n; stmt s;
+Select s such that Next*(3, n) and Parent*(s, n)
+10, 8
+prog_line n1, n2; variable v; call c;
+Select v such that Next*(n1, n2) and Modifies(n1, v) and Uses(n2, v) and Modifies(c, v)
+a,c,d,t
+stmt s;
+Select s such that Follows*(9, s) and Uses(s, "d")
+10 // ---------------------- powinno byc 10, 13
+stmt s;
+Select s such that Follows*(14, s) and Uses(s, "c")
+none // ---------------------- powinno byc 16
+stmt s; while w;
+Select s such that Follows*(19, s) and Parent(w, s)
+20 // ---------------------- powinno byc 20, 21
