@@ -1,0 +1,72 @@
+if ifs; variable v;
+Select v such that Uses(ifs, v) with ifs.stmt# = 22
+x,z
+while w; variable v;
+Select w such that Modifies(w, v) with v.varName = "x"
+14,4
+procedure p, q;
+Select BOOLEAN such that Calls(p, q) with q.procName = "p" and p.procName = "Example"
+true
+prog_line n; stmt s;
+Select s such that Next*(16, n) and Parent*(s, n)
+13,14
+while w; variable v;
+Select w such that Modifies(w, v) with v.varName = "y"
+4
+while w; variable v;
+Select w such that Modifies(w, v) with v.varName = "z"
+14,4
+while w; assign a;
+Select a such that Modifies(a, "i") such that Parent(w, a)
+11,17
+while w; assign a;
+Select a pattern a("x", _) such that Parent*(w, a)
+15,5
+if ifs; assign a;
+Select a pattern a(_, _) such that Follows*(ifs, a)
+11,21,9
+if ifs; assign a;
+Select a pattern a(_, _) such that Follows(ifs, a)
+21,9
+stmt s;
+Select s such that Follows*(14, s) and Uses(s, "x")
+18,19
+stmt s;
+Select s such that Follows*(9, s) and Uses(s, "i")
+11
+procedure p;
+Select p such that Calls*("Example", p) and Uses(p, "x")
+p,q
+procedure p;
+Select p such that Calls*("Example", p) and Modifies(p, "i")
+p
+stmt s; if ifstat;
+Select s such that Modifies(s, "x") and Parent(ifstat, s)
+14,18,24
+stmt s; if ifstat;
+Select s such that Modifies(s, "x") and Parent*(ifstat, s)
+14,15,16,18,24
+stmt s; while w;
+Select s such that Modifies(s, "i") and Parent*(w, s)
+11,17
+procedure p;
+Select p such that Calls*("Example", p) and Modifies(p, "x") and Uses(p, "i")
+p
+procedure p;
+Select p such that Calls*(p, "q") and Uses(p, "y")
+Example,p
+assign a; stmt s;
+Select a pattern a("i", _) such that Follows*(9, s)
+11,17,3
+if ifs; assign a1, a2; variable v1, v2;
+Select ifs such that Follows*(a1, ifs) and Follows*(ifs, a2) and Modifies(ifs, v1) and Uses(ifs, v2) with v1.varName = v2.varName
+6
+prog_line n; variable v; call c;
+Select v such that Uses(n, v) and Modifies(c, v)
+i,x,z
+while w; assign a;
+Select a pattern a(_, _) such that Follows(w, a)
+18
+stmt s; while w;
+Select s such that Follows*(10, s) and Parent(w, s)
+11
