@@ -223,7 +223,7 @@ Select a such that Modifies(a, "c") and Uses(a, "c")
 while w; assign a;
 Select a such that Modifies(a, "t") and Parent(w, a)
 19
-while w, assign a;
+while w; assign a;
 Select a such that Parent(w, a) and Modifies(a, "t")
 19
 while w; assign a;

@@ -39,7 +39,7 @@ Select v such that Modifies(3, v)
 c
 variable v;
 Select v such that Modifies(4, v)
-none
+a,b
 variable v;
 Select v such that Modifies(10, v)
 b,c,d,f
@@ -61,9 +61,9 @@ a,b,c,e
 assign a;
 Select a such that Uses(a, "a")
 2,3,5,7,8,9,11,12
-assign a, variable v;
+assign a; variable v;
 Select a such that Modifies(a, v) and Uses(a, v)
-none
+11,5
 stmt s;
 Select s such that Uses(s, "d")
 10
@@ -72,7 +72,7 @@ Select s such that Uses(s, "c")
 9,10,11
 stmt s;
 Select s such that Uses(s, "b")
-3,4,6,9,10
+3,4,6,9
 if ifstat;
 Select ifstat such that Uses(ifstat, "d")
 10
@@ -99,7 +99,7 @@ Select s such that Modifies(s, "d") and Parent(ifstat, s)
 14
 stmt s; if ifstat;
 Select s such that Modifies(s, "b") and Parent(ifstat, s)
-6,7,8,10,12
+12,7,8
 assign a; while w;
 Select a such that Modifies(a, "a") and Parent(w, a)
 5

@@ -1,0 +1,6 @@
+if ifs;
+Select ifs such that Follows(_, ifs)
+6 => 22,6
+if ifstat;
+Select BOOLEAN pattern ifstat("x", _, _)
+true => moje false

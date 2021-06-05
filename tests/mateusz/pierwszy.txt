@@ -6,7 +6,7 @@ Select ifs such that Follows(5, ifs)
 6
 if ifs;
 Select ifs such that Follows(_, ifs)
-13
+6
 call c;
 Select c such that Follows*(1, c)
 12
