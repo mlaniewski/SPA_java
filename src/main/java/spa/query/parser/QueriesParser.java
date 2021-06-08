@@ -10,6 +10,7 @@ import spa.exception.QueryException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class QueriesParser {
     private QueryTree queryTree;
@@ -94,9 +95,10 @@ public class QueriesParser {
         resutPart = resutPart.trim();
         resutPart = resutPart.replace("(", " ( ");
         resutPart = resutPart.replace(")", " )");
-        resutPart = resutPart.replace(",", " ,");
+        resutPart = resutPart.replace(",", " , ");
         resutPart = resutPart.replace(".", " . ");
         List<String> tokens = Arrays.asList(resutPart.split(" "));
+        tokens = tokens.stream().map(String::trim).filter((t)->!t.equals("")).collect(Collectors.toList());
         Iterator<String> tokensIt = tokens.iterator();
 
         String token = tokensIt.next();
