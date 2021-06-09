@@ -10,7 +10,7 @@ import spa.tree.NodeType;
 
 import java.util.*;
 
-public class Builder {
+public class PKBBuilder {
     private Set<String> variables;
     private Set<String> constants;
     private Map<Integer, Set<Integer>> callers;
@@ -32,56 +32,55 @@ public class Builder {
     private Map<Integer, Set<String>> pattern;
     private Map<Integer, String> fullPattern;
 
-    private List<Integer> tempUiVector = new ArrayList<>();
+    private List<Integer> tmpList = new ArrayList<>();
     private AST ast;
 
-    public Builder(AST ast) {
+    public PKBBuilder(AST ast) {
         this.ast = ast;
-        variables = new HashSet<>();
-        constants = new HashSet<>();
-        callers = new HashMap<>();
-        callersT = new HashMap<>();
-        callees = new HashMap<>();
-        calleesT = new HashMap<>();
-        modifies = new HashMap<>();
-        modified = new HashMap<>();
-        uses = new HashMap<>();
-        used = new HashMap<>();
-        parent = new HashMap<>();
-        parentT = new HashMap<>();
-        children = new HashMap<>();
-        childrenT = new HashMap<>();
-        nextN = new HashMap<>();
-        nextT = new HashMap<>();
-        prevN = new HashMap<>();
-        prevT = new HashMap<>();
-        pattern = new HashMap<>();
-        fullPattern = new HashMap<>();
+        this.variables = new HashSet<>();
+        this.constants = new HashSet<>();
+        this.callers = new HashMap<>();
+        this.callersT = new HashMap<>();
+        this.callees = new HashMap<>();
+        this.calleesT = new HashMap<>();
+        this.modifies = new HashMap<>();
+        this.modified = new HashMap<>();
+        this.uses = new HashMap<>();
+        this.used = new HashMap<>();
+        this.parent = new HashMap<>();
+        this.parentT = new HashMap<>();
+        this.children = new HashMap<>();
+        this.childrenT = new HashMap<>();
+        this.nextN = new HashMap<>();
+        this.nextT = new HashMap<>();
+        this.prevN = new HashMap<>();
+        this.prevT = new HashMap<>();
+        this.pattern = new HashMap<>();
+        this.fullPattern = new HashMap<>();
     }
 
     public PKB buildPKB() {
-        initializeCallMaps();
-        initializeParentMap(ast.getAstTreeAsList().get(0));
-        initializeModifiesAndUsesMaps();
-        for (Node<ASTNode> procedure : ast.getProcedures()) {
-            Node<ASTNode> procedureChild = procedure.getChildren().iterator().next();
-            initializeNextStmtLst(procedureChild, null);
-        }
-        initializeTransientRelation(nextT);
-        initializeTransientRelation(callersT);
-        initializeTransientRelation(calleesT);
-        initializeTransientRelation(childrenT);
-        initializeInvertedVariableRelation(modifies, modified);
-        initializeInvertedVariableRelation(uses, used);
-        initializeTransientRelation(prevT);
-        initializePattern(ast.getAssignments());
-
         for (Node<ASTNode> varNode : ast.getVarNodes()) {
             variables.add(varNode.getData().getParam(NodeParamType.NAME));
         }
         for (Node<ASTNode> constantNode : ast.getConstantNodes()) {
             constants.add(constantNode.getData().getParam(NodeParamType.NAME));
         }
+        buildCallMaps();
+        buildParentAndChildrenMaps(ast.getAstTreeAsList().get(0));
+        buildModifiesAndUsesMaps();
+        for (Node<ASTNode> procedure : ast.getProcedures()) {
+            Node<ASTNode> procedureChild = procedure.getChildren().iterator().next();
+            buildNextStmtLst(procedureChild, null);
+        }
+        buildTransientRelation(nextT);
+        buildTransientRelation(callersT);
+        buildTransientRelation(calleesT);
+        buildTransientRelation(childrenT);
+        buildInvertedVariableRelation(modifies, modified);
+        buildInvertedVariableRelation(uses, used);
+        buildTransientRelation(prevT);
+        buildPattern(ast.getAssignments());
 
         return new PKBImpl(callers,
                 callersT,
@@ -106,7 +105,7 @@ public class Builder {
                 ast);
     }
 
-    private void initializeCallMaps() {
+    private void buildCallMaps() {
         List<Node<ASTNode>> callNodes = ast.getCallNodes();
         for (Node<ASTNode> callNode : callNodes) {
             ASTNode node = callNode.getData();
@@ -125,17 +124,17 @@ public class Builder {
         }
     }
 
-    private void initializeParentMap(Node<ASTNode> node) {
+    private void buildParentAndChildrenMaps(Node<ASTNode> node) {
         NodeType nodeType = node.getData().getNodeType();
-        boolean isLeafNode = nodeType == NodeType.CALL || nodeType == NodeType.ASSIGN;
-        boolean isContainerNode = nodeType == NodeType.WHILE || nodeType == NodeType.IF;
-        boolean isStmt = isLeafNode || isContainerNode;
+        boolean isLeaf = nodeType == NodeType.CALL || nodeType == NodeType.ASSIGN;
+        boolean isContainer = nodeType == NodeType.WHILE || nodeType == NodeType.IF;
+        boolean isStmt = isLeaf || isContainer;
 
         int nodeId = node.getData().getId();
-        if (isStmt && !tempUiVector.isEmpty()) {
-            parent.put(nodeId, tempUiVector.get(tempUiVector.size()-1));
+        if (isStmt && !tmpList.isEmpty()) {
+            parent.put(nodeId, tmpList.get(tmpList.size()-1));
             parentT.computeIfAbsent(nodeId, k -> new HashSet<>());
-            for (Integer id : tempUiVector) {
+            for (Integer id : tmpList) {
                 parentT.get(nodeId).add(id);
             }
             children.computeIfAbsent(parent.get(nodeId), k -> new HashSet<>());
@@ -143,20 +142,20 @@ public class Builder {
             childrenT.computeIfAbsent(parent.get(nodeId), k -> new HashSet<>());
             childrenT.get(parent.get(nodeId)).add(nodeId);
         }
-        if (!isLeafNode) {
-            if (isContainerNode) {
-                tempUiVector.add(nodeId);
+        if (!isLeaf) {
+            if (isContainer) {
+                tmpList.add(nodeId);
             }
             for (Node<ASTNode> child : node.getChildren()) {
-                initializeParentMap(child);
+                buildParentAndChildrenMaps(child);
             }
-            if (isContainerNode) {
-                tempUiVector.remove(tempUiVector.get(tempUiVector.size() - 1));
+            if (isContainer) {
+                tmpList.remove(tmpList.get(tmpList.size() - 1));
             }
         }
     }
 
-    private void initializeModifiesAndUsesMaps() {
+    private void buildModifiesAndUsesMaps() {
         List<Node<ASTNode>> assignments = ast.getAssignments();
         List<Node<ASTNode>> procedures = ast.getProcedures();
         List<Node<ASTNode>> callNodes = ast.getCallNodes();
@@ -167,23 +166,23 @@ public class Builder {
             int nodeId = assignIt.getData().getId();
             modifies.computeIfAbsent(nodeId, k -> new HashSet<>());
             modifies.get(nodeId).add(variable);
-            initializeUsesAssignment(assignIt, assignIt);
+            buildUsesAssignment(assignIt, assignIt);
         }
 
-        Set<Integer> callsToInit = new HashSet<>();
         for (Node<ASTNode> procedureNode : procedures) {
-            initializeModifiesAndUsesContainers(procedureNode);
+            buildModifiesAndUsesContainers(procedureNode);
         }
+
+        Set<Integer> tmpCalls = new HashSet<>();
         for (Node<ASTNode> callNode : callNodes) {
-            callsToInit.add(callNode.getData().getId());
+            tmpCalls.add(callNode.getData().getId());
         }
-        while (!callsToInit.isEmpty())
-        {
-            initializeModifiesAndUsesCalls(ASTNode.getNodeById(callsToInit.iterator().next()), callsToInit);
+        while (!tmpCalls.isEmpty()) {
+            buildModifiesAndUsesCalls(ASTNode.getNodeById(tmpCalls.iterator().next()), tmpCalls);
         }
     }
 
-    private void initializeUsesAssignment(Node<ASTNode> assignNode, Node<ASTNode> child) {
+    private void buildUsesAssignment(Node<ASTNode> assignNode, Node<ASTNode> child) {
         if (child.getData().getNodeType() == NodeType.ASSIGN) {
             Iterator<Node<ASTNode>> it = child.getChildren().iterator();
             child = it.next();
@@ -192,19 +191,16 @@ public class Builder {
             }
         }
         for (Node<ASTNode> node : child.getChildren()) {
-            switch (node.getData().getNodeType()) {
-                case VARIABLE:
-                    uses.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
-                    uses.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME));
-                    break;
-                default:
-                    initializeUsesAssignment(assignNode, node);
-                    break;
+            if (node.getData().getNodeType() == NodeType.VARIABLE) {
+                uses.computeIfAbsent(assignNode.getData().getId(), k -> new HashSet<>());
+                uses.get(assignNode.getData().getId()).add(node.getData().getParam(NodeParamType.NAME));
+            } else {
+                buildUsesAssignment(assignNode, node);
             }
         }
     }
 
-    private void initializeModifiesAndUsesContainers(Node<ASTNode> container) {
+    private void buildModifiesAndUsesContainers(Node<ASTNode> container) {
         for (Node<ASTNode> stmtLstNode : container.getChildren()) {
             for (Node<ASTNode> stmtNode : stmtLstNode.getChildren()) {
                 switch (stmtNode.getData().getNodeType()) {
@@ -213,7 +209,7 @@ public class Builder {
                         uses.computeIfAbsent(stmtNode.getData().getId(), k -> new HashSet<>());
                         uses.get(stmtNode.getData().getId()).add(stmtNode.getData().getParam(NodeParamType.COND));
                     case PROCEDURE:
-                        initializeModifiesAndUsesContainers(stmtNode);
+                        buildModifiesAndUsesContainers(stmtNode);
                     case ASSIGN:
                         modifies.computeIfAbsent(container.getData().getId(), k -> new HashSet<>());
                         if (modifies.get(stmtNode.getData().getId()) != null) {
@@ -232,23 +228,23 @@ public class Builder {
         }
     }
 
-    private void initializeModifiesAndUsesCalls(Node<ASTNode> call, Set<Integer> callsToInit) {
-        callsToInit.remove(call.getData().getId());
-        if (callsToInit.contains(call.getData().getId()) &&
-                !call.getData().getParam(NodeParamType.CALLER).equals(call.getData().getParam(NodeParamType.CALLEE))) {
-            initializeModifiesAndUsesCalls(call, callsToInit);
+    private void buildModifiesAndUsesCalls(Node<ASTNode> callNode, Set<Integer> tmpCalls) {
+        tmpCalls.remove(callNode.getData().getId());
+        if (tmpCalls.contains(callNode.getData().getId()) &&
+                !callNode.getData().getParam(NodeParamType.CALLER).equals(callNode.getData().getParam(NodeParamType.CALLEE))) {
+            buildModifiesAndUsesCalls(callNode, tmpCalls);
         }
-        int caleeProcId = ast.getProcedureByName(call.getData().getParam(NodeParamType.CALLEE)).getData().getId();
-        modifies.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
+        int caleeProcId = ast.getProcedureByName(callNode.getData().getParam(NodeParamType.CALLEE)).getData().getId();
+        modifies.computeIfAbsent(callNode.getData().getId(), k -> new HashSet<>());
         for (String s : modifies.get(caleeProcId)) {
-            modifies.get(call.getData().getId()).add(s);
+            modifies.get(callNode.getData().getId()).add(s);
         }
-        uses.computeIfAbsent(call.getData().getId(), k -> new HashSet<>());
+        uses.computeIfAbsent(callNode.getData().getId(), k -> new HashSet<>());
         for (String s : uses.get(caleeProcId)) {
-            uses.get(call.getData().getId()).add(s);
+            uses.get(callNode.getData().getId()).add(s);
         }
 
-        Node<ASTNode> node = call;
+        Node<ASTNode> node = callNode;
         while (node.getData().getNodeType() != NodeType.PROCEDURE) {
             do {
                 node = node.getParent();
@@ -257,30 +253,29 @@ public class Builder {
                         node.getData().getNodeType() != NodeType.PROCEDURE);
 
             modifies.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
-            for (String s : modifies.get(call.getData().getId())) {
+            for (String s : modifies.get(callNode.getData().getId())) {
                 modifies.get(node.getData().getId()).add(s);
             }
             uses.computeIfAbsent(node.getData().getId(), k -> new HashSet<>());
-            for (String s : uses.get(call.getData().getId())) {
+            for (String s : uses.get(callNode.getData().getId())) {
                 uses.get(node.getData().getId()).add(s);
             }
-
         }
     }
 
-    private void initializeNextStmtLst(Node<ASTNode> stmtLst, Node<ASTNode> next) {
+    private void buildNextStmtLst(Node<ASTNode> stmtLst, Node<ASTNode> next) {
         Iterator<Node<ASTNode>> it = stmtLst.getChildren().iterator();
         Node<ASTNode> prev = it.next();
-        Node<ASTNode> n;
+        Node<ASTNode> node;
         while (it.hasNext()) {
-            n = it.next();
-            initializeNext(prev, n);
-            prev = n;
+            node = it.next();
+            buildNext(prev, node);
+            prev = node;
         }
-        initializeNext(prev, next);
+        buildNext(prev, next);
     }
 
-    private void initializeNext(Node<ASTNode> prev, Node<ASTNode> next) {
+    private void buildNext(Node<ASTNode> prev, Node<ASTNode> next) {
         Node<ASTNode> childNode, childChildNode, prevNextChildNode, prevNextChildChildNode;
         int prevId = prev.getData().getId();
         switch (prev.getData().getNodeType()) {
@@ -311,8 +306,8 @@ public class Builder {
                 prevT.computeIfAbsent(prevNextChildChildNode.getData().getId(), k -> new HashSet<>());
                 prevT.get(prevNextChildChildNode.getData().getId()).add(prevId);
 
-                initializeNextStmtLst(childNode, next);
-                initializeNextStmtLst(prevNextChildNode, next);
+                buildNextStmtLst(childNode, next);
+                buildNextStmtLst(prevNextChildNode, next);
                 break;
             case WHILE:
                 childNode = prev.getChildren().iterator().next();
@@ -328,7 +323,7 @@ public class Builder {
                 prevT.computeIfAbsent(childChildNode.getData().getId(), k -> new HashSet<>());
                 prevT.get(childChildNode.getData().getId()).add(prevId);
 
-                initializeNextStmtLst(childNode, prev);
+                buildNextStmtLst(childNode, prev);
             case ASSIGN:
             case CALL:
                 if (next != null) {
@@ -346,18 +341,18 @@ public class Builder {
         }
     }
 
-    private void initializePattern(List<Node<ASTNode>> assignments ) {
+    private void buildPattern(List<Node<ASTNode>> assignments ) {
         for (Node<ASTNode> assignment : assignments) {
             Iterator<Node<ASTNode>> it = assignment.getChildren().iterator();
             it.next(); //variable name
             Node<ASTNode> exp = it.next();
             Node<ASTNode> expDetails = exp.getChildren().iterator().next();
             int assignmentId = assignment.getData().getId();
-            fullPattern.put(assignmentId, initializePatternNode(expDetails, assignmentId));
+            fullPattern.put(assignmentId, buildPatternNode(expDetails, assignmentId));
         }
     }
 
-    private String initializePatternNode(Node<ASTNode> exp, int id) {
+    private String buildPatternNode(Node<ASTNode> exp, int id) {
         ASTNode expData = exp.getData();
         String val = expData.getParam(NodeParamType.NAME);
         String result = "";
@@ -366,17 +361,17 @@ public class Builder {
             result = val;
         } else {
             Iterator<Node<ASTNode>> it = exp.getChildren().iterator();
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 3; i++) {
                 if (i == 1) {
                     result += val;
                     continue;
                 }
                 Node<ASTNode> elem = it.next();
-                String c = initializePatternNode(elem, id);
-                if (val.compareTo("*") == 0 && elem.getData().getParam(NodeParamType.NAME).compareTo("+") == 0) {
-                    c = "(" + c + ")";
+                String x = buildPatternNode(elem, id);
+                if (val.equals("*") && elem.getData().getParam(NodeParamType.NAME).equals("+")) {
+                    x = "(" + x + ")";
                 }
-                result += c;
+                result = result + x;
             }
         }
 
@@ -385,23 +380,19 @@ public class Builder {
         return result;
     }
 
-    private void initializeTransientRelation(Map<Integer, Set<Integer>> relation) {
-        boolean finished = false;
-        while (!finished) {
-            finished = true;
-            Iterator<Integer> aIt = relation.keySet().iterator();
-            while (aIt.hasNext()) {
-                int a = aIt.next();
+    private void buildTransientRelation(Map<Integer, Set<Integer>> relation) {
+        boolean end = false;
+        while (!end) {
+            end = true;
+            for (int a : relation.keySet()) {
                 Iterator<Integer> bIt = relation.get(a).iterator();
                 Set<Integer> set = new HashSet<>(relation.get(a));
                 while (bIt.hasNext()) {
                     int b = bIt.next();
                     if (relation.get(b) != null) {
-                        Iterator<Integer> cIt = relation.get(b).iterator();
-                        while (cIt.hasNext()) {
-                            int c = cIt.next();
+                        for (int c : relation.get(b)) {
                             if (set.add(c)) {
-                                finished = false;
+                                end = false;
                             }
                         }
                     }
@@ -411,8 +402,7 @@ public class Builder {
         }
     }
 
-    private void initializeInvertedVariableRelation(Map<Integer, Set<String>> rel,
-                                                    Map<String, Set<Integer>> inv) {
+    private void buildInvertedVariableRelation(Map<Integer, Set<String>> rel, Map<String, Set<Integer>> inv) {
         rel.forEach((id, set) -> {
             set.forEach((val -> {
                 inv.computeIfAbsent(val, s -> new HashSet<>());

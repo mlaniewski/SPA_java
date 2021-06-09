@@ -3,7 +3,7 @@ package spa;
 import spa.common.AST;
 import spa.exception.SPAException;
 import spa.pkb.PKB;
-import spa.pkb.builder.Builder;
+import spa.pkb.builder.PKBBuilder;
 import spa.query.evaluator.QueryEvaluator;
 import spa.query.parser.QueriesParser;
 import spa.query.parser.QueryTree;
@@ -24,7 +24,7 @@ public class SPA {
 
         //ast.printTree(false);
 
-        Builder builder = new Builder(ast);
+        PKBBuilder builder = new PKBBuilder(ast);
         PKB pkb = builder.buildPKB();
 
         System.out.println("Ready");
