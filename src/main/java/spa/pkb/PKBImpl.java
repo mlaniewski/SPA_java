@@ -2,7 +2,7 @@ package spa.pkb;
 
 
 import spa.common.AST;
-import spa.exception.PKBException;
+import spa.exception.SPAException;
 import spa.tree.ASTNode;
 import spa.tree.Node;
 import spa.tree.NodeParamType;
@@ -77,10 +77,10 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public Node<ASTNode> getStmtByLineNumber(int lineNumber) throws PKBException {
+    public Node<ASTNode> getStmtByLineNumber(int lineNumber) throws SPAException {
         int idx = lineNumber - 1;
         if (ast.getProgramLines().size() <= idx) {
-            throw new PKBException();
+            throw new SPAException();
         }
         return ast.getProgramLines().get(idx);
     }

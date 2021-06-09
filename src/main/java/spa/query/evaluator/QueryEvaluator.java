@@ -1,7 +1,7 @@
 package spa.query.evaluator;
 
 import spa.common.*;
-import spa.exception.PKBException;
+import spa.exception.SPAException;
 import spa.pkb.PKB;
 import spa.query.parser.QueryTree;
 import spa.relation.*;
@@ -50,7 +50,7 @@ public class QueryEvaluator {
         this.modifies = new Modifies(pkb);
     }
 
-    public void prepareResults() throws PKBException {
+    public void prepareResults() throws SPAException {
         int i = 0;
         for (Predicate predicate : queryTree.getPredTable()) {
             valueOfPred.add(predicate.getValue());
@@ -206,7 +206,7 @@ public class QueryEvaluator {
         }
     }
 
-    private ClosureResult getClosureResult(Closure closure) throws PKBException {
+    private ClosureResult getClosureResult(Closure closure) throws SPAException {
         ClosureResult closureResult = new ClosureResult();
         boolean _transient = closure.getType().endsWith("*");
         String relation = _transient ? closure.getType().substring(0, closure.getType().length() - 1) : closure.getType();

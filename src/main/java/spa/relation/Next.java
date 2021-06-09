@@ -4,7 +4,7 @@ import spa.common.Closure;
 import spa.common.ClosureResult;
 import spa.common.NodeFilter;
 import spa.common.Predicate;
-import spa.exception.PKBException;
+import spa.exception.SPAException;
 import spa.pkb.PKB;
 import spa.tree.ASTNode;
 import spa.tree.Node;
@@ -25,7 +25,7 @@ public class Next implements ClosureResultEvaluator {
         Select BOOLEAN such that Next(1, 2)
      */
     @Override
-    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
         // sprawdzam czy lhs i rhs sa numerami linii
         int lhsLineNum = 0, rhsLineNum = 0;
         try {
@@ -58,7 +58,7 @@ public class Next implements ClosureResultEvaluator {
         Select n2 such that Next*(n2, 5)
      */
     @Override
-    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
         // sprawdzam czy rhs sa numerami linii
         int rhsLineNum = 0;
         try {
@@ -88,7 +88,7 @@ public class Next implements ClosureResultEvaluator {
         Select n2 such that Next*(9, n2)
      */
     @Override
-    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
         // sprawdzam czy lhs sa numerami linii
         int lhsLineNum = 0;
         try {

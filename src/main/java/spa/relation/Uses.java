@@ -4,7 +4,7 @@ import spa.common.Closure;
 import spa.common.ClosureResult;
 import spa.common.NodeFilter;
 import spa.common.Predicate;
-import spa.exception.PKBException;
+import spa.exception.SPAException;
 import spa.pkb.PKB;
 import spa.tree.ASTNode;
 import spa.tree.Node;
@@ -25,7 +25,7 @@ public class Uses implements ClosureResultEvaluator {
         Select s such that Modifies(10, "c")
      */
     @Override
-    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
         // sprawdzam czy lhs sa numerami linii
         int lhsLineNum = 0;
         try {
@@ -67,7 +67,7 @@ public class Uses implements ClosureResultEvaluator {
         Select s such that Uses(s, "c")
      */
     @Override
-    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
         String rhsName = "";
         if (closure.getRhs().startsWith("\"")) {
             rhsName = closure.getRhs().substring(1, closure.getRhs().length() - 1);
@@ -99,7 +99,7 @@ public class Uses implements ClosureResultEvaluator {
         Select v such that Uses(23, v)
      */
     @Override
-    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
         // sprawdzam czy lhs sa numerami linii
         int lhsLineNum = 0;
         try {

@@ -1,8 +1,7 @@
 package spa;
 
 import spa.common.AST;
-import spa.exception.PKBException;
-import spa.exception.QueryException;
+import spa.exception.SPAException;
 import spa.pkb.PKB;
 import spa.pkb.builder.Builder;
 import spa.query.evaluator.QueryEvaluator;
@@ -15,7 +14,7 @@ import spa.source.parser.ParserImpl;
 import java.util.Scanner;
 
 public class SPA {
-    public static void main(String[] args) throws QueryException, PKBException {
+    public static void main(String[] args) throws SPAException {
         //final String sourceFile = "tests/iteracja1/prog3.simple";
         if (args.length < 1) {
             return;
@@ -24,7 +23,7 @@ public class SPA {
         Parser parser = new ParserImpl();
         AST ast = parser.parse(sourceFile);
 
-        ast.printTree(false);
+        //ast.printTree(false);
 
         Builder builder = new Builder(ast);
         PKB pkb = builder.buildPKB();

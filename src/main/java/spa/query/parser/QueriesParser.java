@@ -4,8 +4,8 @@ import spa.common.Closure;
 import spa.common.Pattern;
 import spa.common.Predicate;
 import spa.common.With;
-import spa.exception.PKBException;
-import spa.exception.QueryException;
+import spa.exception.SPAException;
+import spa.exception.SPAException;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -19,7 +19,7 @@ public class QueriesParser {
         this.queryTree = new QueryTree();
     }
 
-    public void parse(String query) throws QueryException, PKBException {
+    public void parse(String query) throws SPAException, SPAException {
         List<String> tokens = Arrays.asList(query.split(";"));
         Iterator<String> tokenIt = tokens.iterator();
         while (tokenIt.hasNext()) {
@@ -34,11 +34,11 @@ public class QueriesParser {
         }
 
         if (tokenIt.hasNext()) {
-            throw new QueryException("Expected 'select' keyword");
+            throw new SPAException("Expected 'select' keyword");
         }
     }
 
-    private void parsePredicate(String predicate) throws QueryException {
+    private void parsePredicate(String predicate) throws SPAException {
         predicate = predicate.trim();
         predicate = predicate.replace(",", " ,");
         List<String> tokens = Arrays.asList(predicate.trim().split(" "));
@@ -79,7 +79,7 @@ public class QueriesParser {
                 currentPredicate = "const";
                 break;
             default:
-                throw new QueryException("Invalid predicate name: " + token);
+                throw new SPAException("Invalid predicate name: " + token);
         }
 
         while (tokensIt.hasNext()) {
@@ -91,7 +91,7 @@ public class QueriesParser {
         }
     }
 
-    private void parseResultPart(String resutPart) throws QueryException, PKBException {
+    private void parseResultPart(String resutPart) throws SPAException, SPAException {
         resutPart = resutPart.trim();
         resutPart = resutPart.replace("(", " ( ");
         resutPart = resutPart.replace(")", " )");
@@ -103,7 +103,7 @@ public class QueriesParser {
 
         String token = tokensIt.next();
         if (!icompare(token, "select")) {
-            throw new QueryException("Expected 'select' keyword at the beginning");
+            throw new SPAException("Expected 'select' keyword at the beginning");
         }
 
         token = tokensIt.next(); //after select
@@ -124,7 +124,7 @@ public class QueriesParser {
                     queryTree.getSelector().addVariableProperty(tmpvar, token);
                     token = tokensIt.next();	//after property name
                 } else {
-                    throw new QueryException("Unsupported variable property: " + token);
+                    throw new SPAException("Unsupported variable property: " + token);
                 }
             } else {
                 if (checkResultPartElement(tmpvar)) {
@@ -143,7 +143,7 @@ public class QueriesParser {
                     token = tokensIt.next(); //after and
                 }
                 else {
-                    throw new QueryException("Unexpected 'and' at the end.");
+                    throw new SPAException("Unexpected 'and' at the end.");
                 }
             }
 
@@ -153,7 +153,7 @@ public class QueriesParser {
             if (icompare(token, "such")) {
                 token = tokensIt.next(); //after such
                 if (!icompare(token, "that")) {
-                    throw new QueryException("Expected 'that' after 'such'");
+                    throw new SPAException("Expected 'that' after 'such'");
                 }
                 token = tokensIt.next(); //after that
 
@@ -161,19 +161,19 @@ public class QueriesParser {
                     String tmpvar = token.toLowerCase();
                     token = tokensIt.next();
                     if (!token.equals("(")) {
-                        throw new QueryException("Expected '(' got: " + token);
+                        throw new SPAException("Expected '(' got: " + token);
                     }
                     token = tokensIt.next(); //after (
                     String lhs = token;
                     token = tokensIt.next();
                     if (!token.equals(",")) {
-                        throw new QueryException("Expected ',' got: " + token);
+                        throw new SPAException("Expected ',' got: " + token);
                     }
                     token = tokensIt.next(); //after ,
                     String rhs = token;
                     token = tokensIt.next();
                     if (!token.equals(")")) {
-                        throw new QueryException("Expected ')' got: " + token);
+                        throw new SPAException("Expected ')' got: " + token);
                     }
                     queryTree.getClosureTable().add(new Closure(tmpvar, lhs, rhs));
 
@@ -247,13 +247,13 @@ public class QueriesParser {
                 String tmpvar = token;
                 token = tokensIt.next(); //after var name
                 if (!token.equals("(")) {
-                    throw new QueryException("Expected '(' got: " + token);
+                    throw new SPAException("Expected '(' got: " + token);
                 }
                 token = tokensIt.next(); //after (
                 String lhs = token;
                 token = tokensIt.next();
                 if (!token.equals(",")) {
-                    throw new QueryException("Expected ',' got: " + token);
+                    throw new SPAException("Expected ',' got: " + token);
                 }
                 token = tokensIt.next(); //after ,
                 String rhs = "";
@@ -262,7 +262,7 @@ public class QueriesParser {
                     token = tokensIt.next();
                 }
                 if (!token.equals(")")) {
-                    throw new QueryException("Expected ')' at the end of pattern, got: " + token);
+                    throw new SPAException("Expected ')' at the end of pattern, got: " + token);
                 }
                 queryTree.getPatternTable().add(new Pattern(tmpvar, lhs, rhs));
                 if (tokensIt.hasNext()) {
@@ -270,12 +270,12 @@ public class QueriesParser {
                 }
             }
             else {
-                throw new QueryException("Invalid query part: " + token);
+                throw new SPAException("Invalid query part: " + token);
             }
         }
     }
 
-    private boolean checkResultPartElement(String token) throws QueryException {
+    private boolean checkResultPartElement(String token) throws SPAException {
         if (icompare(token, "procedure") || icompare(token, "prog_line") ||
                 icompare(token, "stmt") || icompare(token, "stmtlist") ||
                 icompare(token, "stmtlst") || icompare(token, "statement") ||
@@ -291,7 +291,7 @@ public class QueriesParser {
                 }
             }
         }
-        throw new QueryException("Invalid searching result element: " + token);
+        throw new SPAException("Invalid searching result element: " + token);
     }
 
     private boolean icompare(String s1, String s2) {

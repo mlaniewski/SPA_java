@@ -1,7 +1,7 @@
 package spa.source.parser;
 
 import spa.common.AST;
-import spa.exception.ParserException;
+import spa.exception.SPAException;
 import spa.tree.ASTNode;
 import spa.tree.Node;
 import spa.tree.NodeParamType;
@@ -32,7 +32,7 @@ public class ParserImpl implements Parser {
                 ast.addChild(program, parseProcedure());
             }
             ast.addLineNumbers();
-        } catch (FileNotFoundException | ParserException e) {
+        } catch (FileNotFoundException | SPAException e) {
             e.printStackTrace();
         }
         return ast;
@@ -76,7 +76,7 @@ public class ParserImpl implements Parser {
         return list;
     }
 
-    private Node<ASTNode> parseProcedure() throws ParserException {
+    private Node<ASTNode> parseProcedure() throws SPAException {
         validate(match(token, "procedure"), String.format("Expected 'procedure'. Found '%s'.", token));
         token = tokens.next();
         validate(matchName(token), String.format("Expected procedure name. Found '%s'.", token));
@@ -88,7 +88,7 @@ public class ParserImpl implements Parser {
         return procNode;
     }
 
-    private Node<ASTNode> parseStmtLst(NodeType nodeType) throws ParserException {
+    private Node<ASTNode> parseStmtLst(NodeType nodeType) throws SPAException {
         validate(match(token, "{"), String.format("Expected '{'. Found '%s'.", token));
         token = tokens.next();
         validate(!match(token, "}"), "StmtLst must have at least one stmt.");
@@ -102,7 +102,7 @@ public class ParserImpl implements Parser {
         return stmtLstNode;
     }
 
-    private Node<ASTNode> parseStmt() throws ParserException {
+    private Node<ASTNode> parseStmt() throws SPAException {
         if(match(token, "call")){
             return parseCall();
         }
@@ -115,7 +115,7 @@ public class ParserImpl implements Parser {
         return parseAssignment();
     }
 
-    private Node<ASTNode> parseCall() throws ParserException {
+    private Node<ASTNode> parseCall() throws SPAException {
         token = tokens.next();
         validate(matchName(token), String.format("Expected calle procedure name. Found '%s'.", token));
         Node<ASTNode> callNode = ast.createNode(NodeType.CALL);
@@ -127,7 +127,7 @@ public class ParserImpl implements Parser {
         return callNode;
     }
 
-    private Node<ASTNode> parseWhile() throws ParserException {
+    private Node<ASTNode> parseWhile() throws SPAException {
         token = tokens.next();
         validate(matchName(token), String.format("Expected while. Found '%s'.", token));
         Node<ASTNode> whileNODE = ast.createNode(NodeType.WHILE);
@@ -138,7 +138,7 @@ public class ParserImpl implements Parser {
         return whileNODE;
     }
 
-    private Node<ASTNode> parseIf() throws ParserException {
+    private Node<ASTNode> parseIf() throws SPAException {
         token = tokens.next();
         validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
         Node<ASTNode> ifNode = ast.createNode(NodeType.IF);
@@ -153,7 +153,7 @@ public class ParserImpl implements Parser {
         return ifNode;
     }
 
-    private Node<ASTNode> parseAssignment() throws ParserException {
+    private Node<ASTNode> parseAssignment() throws SPAException {
         validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
         Node<ASTNode> assignment = ast.createNode(NodeType.ASSIGN);
         Node<ASTNode> variable = ast.createNode(NodeType.VARIABLE);
@@ -170,7 +170,7 @@ public class ParserImpl implements Parser {
         return assignment;
     }
 
-    private Node<ASTNode> parseExpression() throws ParserException {
+    private Node<ASTNode> parseExpression() throws SPAException {
         Node<ASTNode> expr = parseTerm();
         while (match(token, "+") || match(token, "-")) {
             String op = token;
@@ -185,7 +185,7 @@ public class ParserImpl implements Parser {
         return expr;
     }
 
-    private Node<ASTNode> parseTerm() throws ParserException {
+    private Node<ASTNode> parseTerm() throws SPAException {
         Node<ASTNode> term = parseFactor();
         while (match(token, "*"))
         {
@@ -200,7 +200,7 @@ public class ParserImpl implements Parser {
         return term;
     }
 
-    private Node<ASTNode> parseFactor() throws ParserException {
+    private Node<ASTNode> parseFactor() throws SPAException {
         Node<ASTNode> factor;
         if (match(token, "(")) {
             token = tokens.next();
@@ -228,9 +228,9 @@ public class ParserImpl implements Parser {
         return value.equals(tokenValue);
     }
 
-    private void validate(boolean match, String error) throws ParserException {
+    private void validate(boolean match, String error) throws SPAException {
         if (!match) {
-            throw new ParserException(error);
+            throw new SPAException(error);
         }
     }
 }

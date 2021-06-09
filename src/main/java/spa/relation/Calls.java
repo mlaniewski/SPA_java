@@ -4,7 +4,7 @@ import spa.common.Closure;
 import spa.common.ClosureResult;
 import spa.common.NodeFilter;
 import spa.common.Predicate;
-import spa.exception.PKBException;
+import spa.exception.SPAException;
 import spa.pkb.PKB;
 import spa.tree.ASTNode;
 import spa.tree.Node;
@@ -25,7 +25,7 @@ public class Calls implements ClosureResultEvaluator {
         Select BOOLEAN such that Calls("Circle", "Rectangle")
      */
     @Override
-    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
         // sprawdzam czy lhs i rhs sa nazwami, czyli są w formacie "%s"
         String lhsName = "", rhsName = "";
         if (closure.getLhs().startsWith("\"")) {
@@ -60,7 +60,7 @@ public class Calls implements ClosureResultEvaluator {
         Select p such that Calls(p, "Third")
      */
     @Override
-    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
         // sprawdzam czy rhs sa nazwami, czyli są w formacie "%s"
         String rhsName = "";
         if (closure.getRhs().startsWith("\"")) {
@@ -90,7 +90,7 @@ public class Calls implements ClosureResultEvaluator {
         Select p such that Calls("First", p)
      */
     @Override
-    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws PKBException {
+    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
         // sprawdzam czy lhs i rhs sa nazwami, czyli są w formacie "%s"
         String lhsName = "";
         if (closure.getLhs().startsWith("\"")) {

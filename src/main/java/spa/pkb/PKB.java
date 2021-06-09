@@ -1,6 +1,6 @@
 package spa.pkb;
 
-import spa.exception.PKBException;
+import spa.exception.SPAException;
 import spa.tree.ASTNode;
 import spa.tree.Node;
 
@@ -9,7 +9,7 @@ import java.util.Set;
 
 public interface PKB {
     Node<ASTNode> getProcedureByName(String procName);
-    Node<ASTNode> getStmtByLineNumber(int lineNumber) throws PKBException;
+    Node<ASTNode> getStmtByLineNumber(int lineNumber) throws SPAException;
 
     boolean checkFollows(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient);
     List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient);
