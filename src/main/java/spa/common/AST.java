@@ -41,7 +41,7 @@ public class AST {
         }
         ASTNode n = new ASTNode(nodeType);
         Node<ASTNode> node = tree.iterator().next().addChild(new Node<>(n));
-        n.setTreeIterator(node);
+        ASTNode.addToNodes(n.getId(), node);
 
         switch (nodeType) {
             case PROCEDURE:
@@ -65,8 +65,6 @@ public class AST {
             case CONSTANT:
                 constantNodes.add(node);
                 break;
-            default:
-                break;
         }
         return node;
     }
@@ -77,12 +75,12 @@ public class AST {
         }
     }
 
-    public void addNodeParameter(Node<ASTNode> node, NodeParamType paramType, String value) {
-        node.getData().setParam(paramType, value);
+    public void addNodeParameter(Node<ASTNode> node, NodeParamType paramType, String param) {
+        node.getData().putParam(paramType, param);
     }
 
-    public Node<ASTNode> getProcedureByName(String procName) {
-        Optional<Node<ASTNode>> procNode = procedures.stream().filter(node -> node.getData().getParam(NodeParamType.NAME).equals(procName)).findFirst();
+    public Node<ASTNode> getProcedureByName(String procedureName) {
+        Optional<Node<ASTNode>> procNode = procedures.stream().filter(node -> node.getData().getParam(NodeParamType.NAME).equals(procedureName)).findFirst();
         return procNode.orElse(null);
     }
 
@@ -101,7 +99,7 @@ public class AST {
 
     public void addLineNumbers() {
         List<Node<ASTNode>> list = getAstTreeAsList();
-        int lineNumber = 0;
+        int line = 0;
         for (Node<ASTNode> node : list) {
             ASTNode astNode = node.getData();
             switch (astNode.getNodeType()) {
@@ -109,7 +107,7 @@ public class AST {
                 case WHILE:
                 case IF:
                 case ASSIGN:
-                    astNode.setLineNumber(++lineNumber);
+                    astNode.setLine(++line);
                     programLines.add(node);
             }
         }
@@ -162,7 +160,7 @@ public class AST {
         if (full) {
             System.out.println(cut + node.getData());
         } else {
-            if (node.getData().getLineNumber() != 0) {
+            if (node.getData().getLine() != 0) {
                 System.out.println(cut + node.getData());
             }
         }

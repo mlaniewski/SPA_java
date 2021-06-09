@@ -15,7 +15,6 @@ import java.util.Scanner;
 
 public class SPA {
     public static void main(String[] args) throws SPAException {
-        //final String sourceFile = "tests/iteracja1/prog3.simple";
         if (args.length < 1) {
             return;
         }

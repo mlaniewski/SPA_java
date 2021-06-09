@@ -9,7 +9,7 @@ public class ASTNode {
     private static Map<Integer, Node<ASTNode>> nodes = new HashMap<>();
     private HashMap<NodeParamType, String> params = new HashMap<>();
     private NodeType nodeType;
-    private int lineNumber;
+    private int line;
     private Integer id;
 
 
@@ -18,7 +18,7 @@ public class ASTNode {
         this.id = nextId++;
     }
 
-    public void setParam(NodeParamType type, String val) {
+    public void putParam(NodeParamType type, String val) {
         this.params.put(type, val);
     }
 
@@ -26,7 +26,7 @@ public class ASTNode {
         return params.get(type);
     }
 
-    public void setTreeIterator(Node<ASTNode> node) {
+    public static void addToNodes(int id, Node<ASTNode> node) {
         nodes.put(id, node);
     }
 
@@ -42,12 +42,12 @@ public class ASTNode {
         return nodeType;
     }
 
-    public int getLineNumber() {
-        return lineNumber;
+    public int getLine() {
+        return line;
     }
 
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
+    public void setLine(int line) {
+        this.line = line;
     }
 
     public String nodeToString() {
@@ -57,7 +57,7 @@ public class ASTNode {
             case CONSTANT:
                 return getParam(NodeParamType.NAME);
             default:
-                return String.valueOf(lineNumber);
+                return String.valueOf(line);
         }
     }
 
@@ -67,7 +67,7 @@ public class ASTNode {
                 "params=" + params +
                 ", nodeType=" + nodeType +
                 ", id=" + id +
-                ", line number=" + lineNumber +
+                ", line number=" + line +
                 '}';
     }
 

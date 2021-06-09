@@ -331,7 +331,7 @@ public class QueryEvaluator {
             result.setResultType("SET");
             result.setP(pattern.getVarName());
             for (Node<ASTNode> node : nodes) {
-                result.addValue(String.valueOf(node.getData().getLineNumber()));
+                result.addValue(String.valueOf(node.getData().getLine()));
             }
         }
 
