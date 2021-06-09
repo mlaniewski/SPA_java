@@ -24,7 +24,7 @@ public class ParserImpl implements Parser {
     public AST parse(String filename) {
         ast = new AST();
         try {
-            tokens = createTokenList(filename).iterator();
+            tokens = createTokensIterator(filename);
             Node<ASTNode> program = ast.createNode(NodeType.PROGRAM);
 
             token = tokens.next();
@@ -38,7 +38,7 @@ public class ParserImpl implements Parser {
         return ast;
     }
 
-    private List<String> createTokenList(String filename) throws FileNotFoundException {
+    private Iterator<String> createTokensIterator(String filename) throws FileNotFoundException {
         List<String> list = new ArrayList<>();
         File file = new File(filename);
         Scanner sc = new Scanner(file);
@@ -50,30 +50,25 @@ public class ParserImpl implements Parser {
             int end = line.length();
 
             while (i != end) {
-                if (Character.isDigit(line.charAt(i))) { //integer
+                if (Character.isDigit(line.charAt(i))) {
                     while (j != end && Character.isDigit(line.charAt(j))) {
                         j++;
                     }
-                    list.add(line.substring(i, j));
-                } else if (Character.isLetterOrDigit(line.charAt(i))) { // name
+                } else if (Character.isLetterOrDigit(line.charAt(i))) {
                     while (j != end && Character.isLetterOrDigit(line.charAt(j))) {
                         j++;
                     }
-                    list.add(line.substring(i, j));
-                } else { // special char
-                    if (j != end)
-                    {
-                        j++;
-                    }
-                    list.add(line.substring(i, j));
+                } else { // other char
+                    j++;
                 }
+                list.add(line.substring(i, j));
                 while (j != end && Character.isWhitespace(line.charAt(j))) {
                     j++;
                 }
                 i = j;
             }
         }
-        return list;
+        return list.iterator();
     }
 
     private Node<ASTNode> parseProcedure() throws SPAException {
@@ -83,7 +78,7 @@ public class ParserImpl implements Parser {
         procName = token;
         token = tokens.next();
         Node<ASTNode> procNode = ast.createNode(NodeType.PROCEDURE);
-        ast.addNodeParameter(procNode, NodeParamType.NAME, procName);
+        procNode.getData().putParam(NodeParamType.NAME, procName);
         ast.addChild(procNode, parseStmtLst(NodeType.STMTLST));
         return procNode;
     }
@@ -119,8 +114,8 @@ public class ParserImpl implements Parser {
         token = tokens.next();
         validate(matchName(token), String.format("Expected calle procedure name. Found '%s'.", token));
         Node<ASTNode> callNode = ast.createNode(NodeType.CALL);
-        ast.addNodeParameter(callNode, NodeParamType.CALLER, procName);
-        ast.addNodeParameter(callNode, NodeParamType.CALLEE, token);
+        callNode.getData().putParam(NodeParamType.CALLER, procName);
+        callNode.getData().putParam(NodeParamType.CALLEE, token);
         token = tokens.next();
         validate(match(token, ";"), String.format("Expected ';'. Found '%s'.", token));
         token = tokens.next();
@@ -131,7 +126,7 @@ public class ParserImpl implements Parser {
         token = tokens.next();
         validate(matchName(token), String.format("Expected while. Found '%s'.", token));
         Node<ASTNode> whileNODE = ast.createNode(NodeType.WHILE);
-        ast.addNodeParameter(whileNODE, NodeParamType.COND, token);
+        whileNODE.getData().putParam(NodeParamType.COND, token);
         token = tokens.next();
         ast.addChild(whileNODE, parseStmtLst(NodeType.STMTLST));
 
@@ -142,7 +137,7 @@ public class ParserImpl implements Parser {
         token = tokens.next();
         validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
         Node<ASTNode> ifNode = ast.createNode(NodeType.IF);
-        ast.addNodeParameter(ifNode, NodeParamType.COND, token);
+        ifNode.getData().putParam(NodeParamType.COND, token);
         token = tokens.next();
         validate(match(token, "then"), String.format("Expected 'then'. Found '%s'.", token));
         token = tokens.next();
@@ -157,7 +152,7 @@ public class ParserImpl implements Parser {
         validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
         Node<ASTNode> assignment = ast.createNode(NodeType.ASSIGN);
         Node<ASTNode> variable = ast.createNode(NodeType.VARIABLE);
-        ast.addNodeParameter(variable, NodeParamType.NAME, token);
+        variable.getData().putParam(NodeParamType.NAME, token);
         ast.addChild(assignment, variable);
         token = tokens.next();
         validate(match(token, "="), String.format("Expected '='. Found '%s'.", token));
@@ -173,12 +168,12 @@ public class ParserImpl implements Parser {
     private Node<ASTNode> parseExpression() throws SPAException {
         Node<ASTNode> expr = parseTerm();
         while (match(token, "+") || match(token, "-")) {
-            String op = token;
+            String operatorName = token;
             token = tokens.next();
             Node<ASTNode> left = expr;
             Node<ASTNode> right = parseTerm();
             expr = ast.createNode(NodeType.OPERATOR);
-            ast.addNodeParameter(expr, NodeParamType.NAME, op);
+            expr.getData().putParam(NodeParamType.NAME, operatorName);
             ast.addChild(expr, left);
             ast.addChild(expr, right);
         }
@@ -193,7 +188,7 @@ public class ParserImpl implements Parser {
             Node<ASTNode> left = term;
             Node<ASTNode> right = parseFactor();
             term = ast.createNode(NodeType.OPERATOR);
-            ast.addNodeParameter(term, NodeParamType.NAME, "*");
+            term.getData().putParam(NodeParamType.NAME, "*");
             ast.addChild(term, left);
             ast.addChild(term, right);
         }
@@ -207,21 +202,26 @@ public class ParserImpl implements Parser {
             factor = parseExpression();
             validate(match(token, ")"), String.format("Expected ')'. Found '%s'.",token));
         } else {
-            validate(matchName(token) || matchInteger(token),
+            validate(matchName(token) || matchNumber(token),
                     String.format("Expected variable name or constant. Found '%s'.", token));
-            factor = ast.createNode(matchInteger(token) ? NodeType.CONSTANT : NodeType.VARIABLE);
-            ast.addNodeParameter(factor, NodeParamType.NAME, token);
+            factor = ast.createNode(matchNumber(token) ? NodeType.CONSTANT : NodeType.VARIABLE);
+            factor.getData().putParam(NodeParamType.NAME, token);
         }
         token = tokens.next();
         return factor;
     }
 
-    boolean matchInteger(String tokenValue) {
-        return tokenValue.matches("\\d+");
+    private boolean matchNumber(String tokenValue) {
+        try {
+            Integer.valueOf(tokenValue);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private boolean matchName(String tokenValue) {
-        return tokenValue.matches("[a-z|A-Z]+[a-z|A-Z|\\d]*");
+        return tokenValue.matches("[a-z|A-Z]+\\w*");
     }
 
     private boolean match(String tokenValue, String value) {

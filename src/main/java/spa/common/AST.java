@@ -75,10 +75,6 @@ public class AST {
         }
     }
 
-    public void addNodeParameter(Node<ASTNode> node, NodeParamType paramType, String param) {
-        node.getData().putParam(paramType, param);
-    }
-
     public Node<ASTNode> getProcedureByName(String procedureName) {
         Optional<Node<ASTNode>> procNode = procedures.stream().filter(node -> node.getData().getParam(NodeParamType.NAME).equals(procedureName)).findFirst();
         return procNode.orElse(null);
