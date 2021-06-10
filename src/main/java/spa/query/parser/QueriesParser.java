@@ -147,18 +147,18 @@ public class QueriesParser {
                         throw new SPAException("Expected '(' got: " + token);
                     }
                     token = tokensIt.next();
-                    String lhs = token;
+                    String leftParam = token;
                     token = tokensIt.next();
                     if (!token.equals(",")) {
                         throw new SPAException("Expected ',' got: " + token);
                     }
                     token = tokensIt.next();
-                    String rhs = token;
+                    String rightParam = token;
                     token = tokensIt.next();
                     if (!token.equals(")")) {
                         throw new SPAException("Expected ')' got: " + token);
                     }
-                    queryTree.getClosureTable().add(new Closure(tmpvar, lhs, rhs));
+                    queryTree.getClosureTable().add(new Closure(tmpvar, leftParam, rightParam));
 
                     if (tokensIt.hasNext()) {
                         token = tokensIt.next();
@@ -182,27 +182,27 @@ public class QueriesParser {
                 boolean end = false;
                 while (!end) {
                     With tmp = new With();
-                    tmp.setLhsVarName(token);
+                    tmp.setLeftParamVarName(token);
                     token = tokensIt.next();
 
                     if (token.equals(".")) {
                         token = tokensIt.next();
                         token = token.replace("#", "");
-                        tmp.setLhsIsProperty(true);
-                        tmp.setLhsPropertyName(token);
+                        tmp.setLeftParamProperty(true);
+                        tmp.setLeftParamPropertyName(token);
                         token = tokensIt.next();
                     }
 
                     tmp.setOperand(token);
                     token = tokensIt.next();
-                    tmp.setRhsVarName(token);
+                    tmp.setRightParamVarName(token);
 
                     if (tokensIt.hasNext()) {
                         token = tokensIt.next();
                         if (token.equals(".")) {
                             token = tokensIt.next();
-                            tmp.setRhsIsProperty(true);
-                            tmp.setRhsPropertyName(token);
+                            tmp.setRightParamProperty(true);
+                            tmp.setRightParamPropertyName(token);
 
                             if (tokensIt.hasNext()) {
                                 token = tokensIt.next();
@@ -232,21 +232,21 @@ public class QueriesParser {
                     throw new SPAException("Expected '(' got: " + token);
                 }
                 token = tokensIt.next();
-                String lhs = token;
+                String leftParam = token;
                 token = tokensIt.next();
                 if (!token.equals(",")) {
                     throw new SPAException("Expected ',' got: " + token);
                 }
                 token = tokensIt.next();
-                String rhs = "";
+                String rightParam = "";
                 while (tokensIt.hasNext() && !token.equals(")")) {
-                    rhs += token;
+                    rightParam += token;
                     token = tokensIt.next();
                 }
                 if (!token.equals(")")) {
                     throw new SPAException("Expected ')' at the end of pattern, got: " + token);
                 }
-                queryTree.getPatternTable().add(new Pattern(tmpvar, lhs, rhs));
+                queryTree.getPatternTable().add(new Pattern(tmpvar, leftParam, rightParam));
                 if (tokensIt.hasNext()) {
                     token = tokensIt.next();
                 }

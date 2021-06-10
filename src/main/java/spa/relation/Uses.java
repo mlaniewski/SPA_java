@@ -26,29 +26,28 @@ public class Uses implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
-        // sprawdzam czy lhs sa numerami linii
-        int lhsLineNum = 0;
+        int leftParamLineNum = 0;
         try {
-            lhsLineNum = Integer.valueOf(closure.getLhs());
+            leftParamLineNum = Integer.valueOf(closure.getLeftParam());
         } catch (NumberFormatException e) { }
-        // sprawdzam czy lhs i rhs sa nazwami
-        String lhsName = "", rhsName = "";
-        if (closure.getLhs().startsWith("\"")) {
-            lhsName = closure.getLhs().substring(1, closure.getLhs().length() - 1);
+
+        String leftParamName = "", rightParamName = "";
+        if (closure.getLeftParam().startsWith("\"")) {
+            leftParamName = closure.getLeftParam().substring(1, closure.getLeftParam().length() - 1);
         }
-        if (closure.getRhs().startsWith("\"")) {
-            rhsName = closure.getRhs().substring(1, closure.getRhs().length() - 1);
+        if (closure.getRightParam().startsWith("\"")) {
+            rightParamName = closure.getRightParam().substring(1, closure.getRightParam().length() - 1);
         }
 
         ClosureResult closureResult = new ClosureResult();
-        if ((lhsLineNum != 0 || !lhsName.isEmpty()) && !rhsName.isEmpty()) {
-            Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
-            closureResult.setBoolResult(pkb.checkUses(n, rhsName));
-        } else if (lhsLineNum != 0 || !lhsName.isEmpty()) {
-            Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+        if ((leftParamLineNum != 0 || !leftParamName.isEmpty()) && !rightParamName.isEmpty()) {
+            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLineNumber(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
+            closureResult.setBoolResult(pkb.checkUses(n, rightParamName));
+        } else if (leftParamLineNum != 0 || !leftParamName.isEmpty()) {
+            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLineNumber(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
             closureResult.setBoolResult(!pkb.getUsed(n).isEmpty());
-        } else if (!rhsName.isEmpty()) {
-            closureResult.setBoolResult(!pkb.getUsing(rhsName).isEmpty());
+        } else if (!rightParamName.isEmpty()) {
+            closureResult.setBoolResult(!pkb.getUsing(rightParamName).isEmpty());
         } else {
             List<String> vars = pkb.getAllVariables();
             closureResult.setBoolResult(false);
@@ -68,14 +67,14 @@ public class Uses implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
-        String rhsName = "";
-        if (closure.getRhs().startsWith("\"")) {
-            rhsName = closure.getRhs().substring(1, closure.getRhs().length() - 1);
+        String rightParamName = "";
+        if (closure.getRightParam().startsWith("\"")) {
+            rightParamName = closure.getRightParam().substring(1, closure.getRightParam().length() - 1);
         }
 
         ClosureResult closureResult = new ClosureResult();
-        if (!rhsName.isEmpty()) { // zmienna
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getUsing(rhsName), p1.getType());
+        if (!rightParamName.isEmpty()) { // zmienna
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getUsing(rightParamName), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
@@ -100,20 +99,19 @@ public class Uses implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
-        // sprawdzam czy lhs sa numerami linii
-        int lhsLineNum = 0;
+        int leftParamLineNum = 0;
         try {
-            lhsLineNum = Integer.valueOf(closure.getLhs());
+            leftParamLineNum = Integer.valueOf(closure.getLeftParam());
         } catch (NumberFormatException e) { }
-        // sprawdzam czy lhs i rhs sa nazwami
-        String lhsName = "", rhsName = "";
-        if (closure.getLhs().startsWith("\"")) {
-            lhsName = closure.getLhs().substring(1, closure.getLhs().length() - 1);
+
+        String leftParamName = "";
+        if (closure.getLeftParam().startsWith("\"")) {
+            leftParamName = closure.getLeftParam().substring(1, closure.getLeftParam().length() - 1);
         }
 
         ClosureResult closureResult = new ClosureResult();
-        if (lhsLineNum != 0 || !lhsName.isEmpty()) { // stmt lub proc
-            Node<ASTNode> n = lhsLineNum != 0 ? pkb.getStmtByLineNumber(lhsLineNum) : pkb.getProcedureByName(lhsName);
+        if (leftParamLineNum != 0 || !leftParamName.isEmpty()) { // stmt lub proc
+            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLineNumber(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
             List<String> results = pkb.getUsed(n);
             for (String res : results) {
                 closureResult.addValue(res);

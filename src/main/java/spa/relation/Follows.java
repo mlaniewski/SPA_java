@@ -26,20 +26,19 @@ public class Follows implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
-        // sprawdzam czy lhs i rhs sa numerami linii
-        int lhsLineNum = 0, rhsLineNum = 0;
+        int leftParmLineNum = 0, rightParmLineNum = 0;
         try {
-            lhsLineNum = Integer.valueOf(closure.getLhs());
-            rhsLineNum = Integer.valueOf(closure.getRhs());
+            leftParmLineNum = Integer.valueOf(closure.getLeftParam());
+            rightParmLineNum = Integer.valueOf(closure.getRightParam());
         } catch (NumberFormatException e) { }
 
         ClosureResult closureResult = new ClosureResult();
-        if (lhsLineNum != 0 && rhsLineNum != 0) {
-            closureResult.setBoolResult(pkb.checkFollows(pkb.getStmtByLineNumber(lhsLineNum), pkb.getStmtByLineNumber(rhsLineNum), _transient));
-        } else if (lhsLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLineNumber(lhsLineNum), _transient).isEmpty());
-        } else if (rhsLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getFollowed(pkb.getStmtByLineNumber(rhsLineNum), _transient).isEmpty());
+        if (leftParmLineNum != 0 && rightParmLineNum != 0) {
+            closureResult.setBoolResult(pkb.checkFollows(pkb.getStmtByLineNumber(leftParmLineNum), pkb.getStmtByLineNumber(rightParmLineNum), _transient));
+        } else if (leftParmLineNum != 0) {
+            closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLineNumber(leftParmLineNum), _transient).isEmpty());
+        } else if (rightParmLineNum != 0) {
+            closureResult.setBoolResult(!pkb.getFollowed(pkb.getStmtByLineNumber(rightParmLineNum), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
             closureResult.setBoolResult(false);
@@ -59,15 +58,14 @@ public class Follows implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
-        // sprawdzam czy rhs sa numerami linii
-        int rhsLineNum = 0;
+        int rightParamLineNum = 0;
         try {
-            rhsLineNum = Integer.valueOf(closure.getRhs());
+            rightParamLineNum = Integer.valueOf(closure.getRightParam());
         } catch (NumberFormatException e) { }
 
         ClosureResult closureResult = new ClosureResult();
-        if (rhsLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowed(pkb.getStmtByLineNumber(rhsLineNum), _transient), p1.getType());
+        if (rightParamLineNum != 0) { // numer linii
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowed(pkb.getStmtByLineNumber(rightParamLineNum), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
@@ -89,15 +87,14 @@ public class Follows implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
-        // sprawdzam czy lhs sa numerami linii
-        int lhsLineNum = 0;
+        int leftParamLineNum = 0;
         try {
-            lhsLineNum = Integer.valueOf(closure.getLhs());
+            leftParamLineNum = Integer.valueOf(closure.getLeftParam());
         } catch (NumberFormatException e) { }
 
         ClosureResult closureResult = new ClosureResult();
-        if (lhsLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowing(pkb.getStmtByLineNumber(lhsLineNum), _transient), p2.getType());
+        if (leftParamLineNum != 0) { // numer linii
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowing(pkb.getStmtByLineNumber(leftParamLineNum), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }

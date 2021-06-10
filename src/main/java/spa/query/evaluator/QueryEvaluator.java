@@ -210,9 +210,9 @@ public class QueryEvaluator {
         Predicate p1 = new Predicate();
         Predicate p2 = new Predicate();
         for (Predicate predicate : queryTree.getPredTable()) {
-            if (closure.getLhs().equals(predicate.getValue())) {
+            if (closure.getLeftParam().equals(predicate.getValue())) {
                 p1 = predicate;
-            } else if (closure.getRhs().equals(predicate.getValue())) {
+            } else if (closure.getRightParam().equals(predicate.getValue())) {
                 p2 = predicate;
             }
         }
@@ -319,7 +319,7 @@ public class QueryEvaluator {
 
     private ClosureResult getPatternResult(Pattern pattern) {
         ClosureResult result = new ClosureResult();
-        List<Node<ASTNode>> nodes = pkb.getPattern(pattern.getLhs(), pattern.getRhs());
+        List<Node<ASTNode>> nodes = pkb.getPattern(pattern.getLeftParam(), pattern.getRightParam());
         if (nodes.isEmpty()) {
             result.setResultType("BOOL");
             result.setBoolResult(false);
@@ -336,25 +336,25 @@ public class QueryEvaluator {
 
     private ClosureResult getWithResult(With with) {
         ClosureResult closureResult = new ClosureResult();
-        if (with.getLhsPropertyName().equals(with.getRhsPropertyName())) {
+        if (with.getLeftParamPropertyName().equals(with.getRightParamPropertyName())) {
             closureResult.setResultType("MAP");
-            closureResult.setP(with.getLhsVarName());
-            closureResult.setQ(with.getRhsVarName());
-            Set<String> allVals = pkb.getAllPropertyValues(with.getLhsPropertyName());
+            closureResult.setP(with.getLeftParamVarName());
+            closureResult.setQ(with.getRightParamVarName());
+            Set<String> allVals = pkb.getAllPropertyValues(with.getLeftParamPropertyName());
             for (String val : allVals) {
                 closureResult.addPq(val, val);
                 closureResult.addQp(val, val);
             }
-        } else if ((with.getLhsPropertyName().equals("value") && with.getRhsPropertyName().equals("stmt")) ||
-                (with.getLhsPropertyName().equals("stmt") && with.getRhsPropertyName().equals("value"))) {
+        } else if ((with.getLeftParamPropertyName().equals("value") && with.getRightParamPropertyName().equals("stmt")) ||
+                (with.getLeftParamPropertyName().equals("stmt") && with.getRightParamPropertyName().equals("value"))) {
             closureResult.setResultType("MAP");
-            closureResult.setP(with.getLhsVarName());
-            closureResult.setQ(with.getRhsVarName());
+            closureResult.setP(with.getLeftParamVarName());
+            closureResult.setQ(with.getRightParamVarName());
             Set<String> allVals = new HashSet<>();
-            Set<String> lhsVals = pkb.getAllPropertyValues(with.getLhsPropertyName());
-            Set<String> rhsVals = pkb.getAllPropertyValues(with.getRhsPropertyName());
-            for (String el : lhsVals) {
-                if (rhsVals.contains(el)) {
+            Set<String> leftParamVals = pkb.getAllPropertyValues(with.getLeftParamPropertyName());
+            Set<String> rightParamVals = pkb.getAllPropertyValues(with.getRightParamPropertyName());
+            for (String el : leftParamVals) {
+                if (rightParamVals.contains(el)) {
                     allVals.add(el);
                 }
             }
@@ -362,24 +362,24 @@ public class QueryEvaluator {
                 closureResult.addPq(val, val);
                 closureResult.addQp(val, val);
             }
-        } else if (with.getLhsPropertyName().equals("value")) {
+        } else if (with.getLeftParamPropertyName().equals("value")) {
             closureResult.setResultType("BOOLEAN");
             closureResult.setBoolResult(false);
             Set<String> constants = pkb.getConstants();
             for (String c : constants) {
-                if (c.equals(with.getRhsVarName())) {
+                if (c.equals(with.getRightParamVarName())) {
                     closureResult.setBoolResult(true);
                     break;
                 }
             }
         } else {
             closureResult.setResultType("SET");
-            closureResult.setP(with.getLhsVarName());
-            if (with.getRhsVarName().startsWith("\"")) {
-                closureResult.addValue(with.getRhsVarName().substring(1, with.getRhsVarName().length() - 1));
+            closureResult.setP(with.getLeftParamVarName());
+            if (with.getRightParamVarName().startsWith("\"")) {
+                closureResult.addValue(with.getRightParamVarName().substring(1, with.getRightParamVarName().length() - 1));
             }
             else {
-                closureResult.addValue(with.getRhsVarName());
+                closureResult.addValue(with.getRightParamVarName());
             }
         }
 

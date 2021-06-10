@@ -2,12 +2,12 @@ package spa.common;
 
 public class With {
     private String operand = "";
-    private String lhsVarName = "";
-    private String lhsPropertyName = "";
-    private String rhsVarName = "";
-    private String rhsPropertyName = "";
-    private boolean rhsIsProperty;
-    private boolean lhsIsProperty;
+    private String leftParamVarName = "";
+    private String leftParamPropertyName = "";
+    private String rightParamVarName = "";
+    private String rightParamPropertyName = "";
+    private boolean isRightParamProperty;
+    private boolean isLeftParamProperty;
 
     public String getOperand() {
         return operand;
@@ -17,64 +17,64 @@ public class With {
         this.operand = operand;
     }
 
-    public String getLhsVarName() {
-        return lhsVarName;
+    public String getLeftParamVarName() {
+        return leftParamVarName;
     }
 
-    public void setLhsVarName(String lhsVarName) {
-        this.lhsVarName = lhsVarName;
+    public void setLeftParamVarName(String leftParamVarName) {
+        this.leftParamVarName = leftParamVarName;
     }
 
-    public String getLhsPropertyName() {
-        return lhsPropertyName;
+    public String getLeftParamPropertyName() {
+        return leftParamPropertyName;
     }
 
-    public void setLhsPropertyName(String lhsPropertyName) {
-        this.lhsPropertyName = lhsPropertyName;
+    public void setLeftParamPropertyName(String leftParamPropertyName) {
+        this.leftParamPropertyName = leftParamPropertyName;
     }
 
-    public String getRhsVarName() {
-        return rhsVarName;
+    public String getRightParamVarName() {
+        return rightParamVarName;
     }
 
-    public void setRhsVarName(String rhsVarName) {
-        this.rhsVarName = rhsVarName;
+    public void setRightParamVarName(String rightParamVarName) {
+        this.rightParamVarName = rightParamVarName;
     }
 
-    public String getRhsPropertyName() {
-        return rhsPropertyName;
+    public String getRightParamPropertyName() {
+        return rightParamPropertyName;
     }
 
-    public void setRhsPropertyName(String rhsPropertyName) {
-        this.rhsPropertyName = rhsPropertyName;
+    public void setRightParamPropertyName(String rightParamPropertyName) {
+        this.rightParamPropertyName = rightParamPropertyName;
     }
 
-    public boolean isRhsIsProperty() {
-        return rhsIsProperty;
+    public boolean isRightParamProperty() {
+        return isRightParamProperty;
     }
 
-    public void setRhsIsProperty(boolean rhsIsProperty) {
-        this.rhsIsProperty = rhsIsProperty;
+    public void setRightParamProperty(boolean rightParamProperty) {
+        this.isRightParamProperty = rightParamProperty;
     }
 
-    public boolean isLhsIsProperty() {
-        return lhsIsProperty;
+    public boolean isLeftParamProperty() {
+        return isLeftParamProperty;
     }
 
-    public void setLhsIsProperty(boolean lhsIsProperty) {
-        this.lhsIsProperty = lhsIsProperty;
+    public void setLeftParamProperty(boolean leftParamProperty) {
+        this.isLeftParamProperty = leftParamProperty;
     }
 
     @Override
     public String toString() {
         return "With{" +
                 "operand='" + operand + '\'' +
-                ", lhsVarName='" + lhsVarName + '\'' +
-                ", lhsPropertyName='" + lhsPropertyName + '\'' +
-                ", rhsVarName='" + rhsVarName + '\'' +
-                ", rhsPropertyName='" + rhsPropertyName + '\'' +
-                ", rhsIsProperty=" + rhsIsProperty +
-                ", lhsIsProperty=" + lhsIsProperty +
+                ", leftParamVarName='" + leftParamVarName + '\'' +
+                ", leftParamPropertyName='" + leftParamPropertyName + '\'' +
+                ", rightParamVarName='" + rightParamVarName + '\'' +
+                ", rightParamPropertyName='" + rightParamPropertyName + '\'' +
+                ", isRightParamProperty=" + isRightParamProperty +
+                ", isLeftParamProperty=" + isLeftParamProperty +
                 '}';
     }
 }

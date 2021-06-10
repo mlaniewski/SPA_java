@@ -2,13 +2,13 @@ package spa.common;
 
 public class Closure {
     private String type;
-    private String lhs;
-    private String rhs;
+    private String leftParam;
+    private String rightParam;
 
-    public Closure(String type, String lhs, String rhs) {
+    public Closure(String type, String leftParam, String rightParam) {
         this.type = type;
-        this.lhs = lhs;
-        this.rhs = rhs;
+        this.leftParam = leftParam;
+        this.rightParam = rightParam;
     }
 
     public String getType() {
@@ -19,28 +19,28 @@ public class Closure {
         this.type = type;
     }
 
-    public String getLhs() {
-        return lhs;
+    public String getLeftParam() {
+        return leftParam;
     }
 
-    public void setLhs(String lhs) {
-        this.lhs = lhs;
+    public void setLeftParam(String leftParam) {
+        this.leftParam = leftParam;
     }
 
-    public String getRhs() {
-        return rhs;
+    public String getRightParam() {
+        return rightParam;
     }
 
-    public void setRhs(String rhs) {
-        this.rhs = rhs;
+    public void setRightParam(String rightParam) {
+        this.rightParam = rightParam;
     }
 
     @Override
     public String toString() {
         return "Closure{" +
                 "type='" + type + '\'' +
-                ", lhs='" + lhs + '\'' +
-                ", rhs='" + rhs + '\'' +
+                ", leftParam='" + leftParam + '\'' +
+                ", rightParam='" + rightParam + '\'' +
                 '}';
     }
 }

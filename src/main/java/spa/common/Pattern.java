@@ -2,33 +2,33 @@ package spa.common;
 
 public class Pattern {
     private String varName;
-    private String lhs;
-    private String rhs;
+    private String leftParam;
+    private String rightParam;
 
-    public Pattern(String varName, String lhs, String rhs) {
+    public Pattern(String varName, String leftParam, String rightParam) {
         this.varName = varName;
-        this.lhs = lhs;
-        this.rhs = rhs;
+        this.leftParam = leftParam;
+        this.rightParam = rightParam;
     }
 
     public String getVarName() {
         return varName;
     }
 
-    public String getLhs() {
-        return lhs;
+    public String getLeftParam() {
+        return leftParam;
     }
 
-    public String getRhs() {
-        return rhs;
+    public String getRightParam() {
+        return rightParam;
     }
 
     @Override
     public String toString() {
         return "Pattern{" +
                 "varName='" + varName + '\'' +
-                ", lhs='" + lhs + '\'' +
-                ", rhs='" + rhs + '\'' +
+                ", leftParam='" + leftParam + '\'' +
+                ", rightParam='" + rightParam + '\'' +
                 '}';
     }
 }

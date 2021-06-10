@@ -72,8 +72,8 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public Node<ASTNode> getProcedureByName(String procName) {
-        return ast.getProcedureByName(procName);
+    public Node<ASTNode> getProcedureByName(String procedureName) {
+        return ast.getProcedureByName(procedureName);
     }
 
     @Override

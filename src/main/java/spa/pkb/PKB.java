@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface PKB {
-    Node<ASTNode> getProcedureByName(String procName);
+    Node<ASTNode> getProcedureByName(String procedureName);
     Node<ASTNode> getStmtByLineNumber(int lineNumber) throws SPAException;
 
     boolean checkFollows(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient);

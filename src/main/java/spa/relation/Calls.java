@@ -26,22 +26,21 @@ public class Calls implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
-        // sprawdzam czy lhs i rhs sa nazwami, czyli są w formacie "%s"
-        String lhsName = "", rhsName = "";
-        if (closure.getLhs().startsWith("\"")) {
-            lhsName = closure.getLhs().substring(1, closure.getLhs().length() - 1);
+        String leftParamName = "", rightParamName = "";
+        if (closure.getLeftParam().startsWith("\"")) {
+            leftParamName = closure.getLeftParam().substring(1, closure.getLeftParam().length() - 1);
         }
-        if (closure.getRhs().startsWith("\"")) {
-            rhsName = closure.getRhs().substring(1, closure.getRhs().length() - 1);
+        if (closure.getRightParam().startsWith("\"")) {
+            rightParamName = closure.getRightParam().substring(1, closure.getRightParam().length() - 1);
         }
 
         ClosureResult closureResult = new ClosureResult();
-        if (!lhsName.isEmpty() && !rhsName.isEmpty()) {
-            closureResult.setBoolResult(pkb.checkCalls(pkb.getProcedureByName(lhsName), pkb.getProcedureByName(rhsName), _transient));
-        } else if (!lhsName.isEmpty()) {
-            closureResult.setBoolResult(!pkb.getCallees(pkb.getProcedureByName(lhsName), _transient).isEmpty());
-        } else if (!rhsName.isEmpty()) {
-            closureResult.setBoolResult(!pkb.getCallers(pkb.getProcedureByName(rhsName), _transient).isEmpty());
+        if (!leftParamName.isEmpty() && !rightParamName.isEmpty()) {
+            closureResult.setBoolResult(pkb.checkCalls(pkb.getProcedureByName(leftParamName), pkb.getProcedureByName(rightParamName), _transient));
+        } else if (!leftParamName.isEmpty()) {
+            closureResult.setBoolResult(!pkb.getCallees(pkb.getProcedureByName(leftParamName), _transient).isEmpty());
+        } else if (!rightParamName.isEmpty()) {
+            closureResult.setBoolResult(!pkb.getCallers(pkb.getProcedureByName(rightParamName), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("procedure");
             closureResult.setBoolResult(false);
@@ -61,15 +60,14 @@ public class Calls implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
-        // sprawdzam czy rhs sa nazwami, czyli są w formacie "%s"
-        String rhsName = "";
-        if (closure.getRhs().startsWith("\"")) {
-            rhsName = closure.getRhs().substring(1, closure.getRhs().length() - 1);
+        String rightParamName = "";
+        if (closure.getRightParam().startsWith("\"")) {
+            rightParamName = closure.getRightParam().substring(1, closure.getRightParam().length() - 1);
         }
 
         ClosureResult closureResult = new ClosureResult();
-        if (!rhsName.isEmpty()) { // nazwa procedury
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallers(pkb.getProcedureByName(rhsName), _transient), p1.getType());
+        if (!rightParamName.isEmpty()) { // nazwa procedury
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallers(pkb.getProcedureByName(rightParamName), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
@@ -91,15 +89,14 @@ public class Calls implements ClosureResultEvaluator {
      */
     @Override
     public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
-        // sprawdzam czy lhs i rhs sa nazwami, czyli są w formacie "%s"
-        String lhsName = "";
-        if (closure.getLhs().startsWith("\"")) {
-            lhsName = closure.getLhs().substring(1, closure.getLhs().length() - 1);
+        String leftParamName = "";
+        if (closure.getLeftParam().startsWith("\"")) {
+            leftParamName = closure.getLeftParam().substring(1, closure.getLeftParam().length() - 1);
         }
 
         ClosureResult closureResult = new ClosureResult();
-        if (!lhsName.isEmpty()) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallees(pkb.getProcedureByName(lhsName), _transient), p2.getType());
+        if (!leftParamName.isEmpty()) { // numer linii
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallees(pkb.getProcedureByName(leftParamName), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
