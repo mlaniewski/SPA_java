@@ -31,9 +31,9 @@ public class SPA {
 
         Scanner sc = new Scanner(System.in);
         while (true) {
-            String q1 = sc.nextLine();
-            String q2 = sc.nextLine();
-            String query = q1 + " " + q2;
+            final String q1 = sc.nextLine();
+            final String q2 = sc.nextLine();
+            final String query = q1 + " " + q2;
 
             QueriesParser queriesParser = new QueriesParser();
             queriesParser.parse(query);

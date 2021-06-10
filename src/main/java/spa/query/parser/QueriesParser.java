@@ -5,7 +5,6 @@ import spa.common.Pattern;
 import spa.common.Predicate;
 import spa.common.With;
 import spa.exception.SPAException;
-import spa.exception.SPAException;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -19,13 +18,13 @@ public class QueriesParser {
         this.queryTree = new QueryTree();
     }
 
-    public void parse(String query) throws SPAException, SPAException {
+    public void parse(String query) throws SPAException {
         List<String> tokens = Arrays.asList(query.split(";"));
         Iterator<String> tokenIt = tokens.iterator();
         while (tokenIt.hasNext()) {
             String token = tokenIt.next();
             String[] elements = token.split(" ");
-            if (icompare(elements[1], "select")) {
+            if (compare(elements[1], "select")) {
                 parseResultPart(token);
                 break;
             } else {
@@ -102,74 +101,58 @@ public class QueriesParser {
         Iterator<String> tokensIt = tokens.iterator();
 
         String token = tokensIt.next();
-        if (!icompare(token, "select")) {
+        if (!compare(token, "select")) {
             throw new SPAException("Expected 'select' keyword at the beginning");
         }
 
-        token = tokensIt.next(); //after select
+        token = tokensIt.next();
 
-        //====================
         // parse selector
-        //====================
-        if (icompare(token, "boolean")) {
+        if (compare(token, "boolean")) {
             token = tokensIt.next();
             queryTree.getSelector().setType("boolean");
         } else {
             String tmpvar = token;
-            token = tokensIt.next(); //after var name
-            if (tokensIt.hasNext() && token.equals(".")) {
-                queryTree.getSelector().setType("property");
-                token = tokensIt.next(); //after .
-                if (icompare(token, "stmt") || icompare(token, "varname") || icompare(token, "procname") || icompare(token, "value")) {
-                    queryTree.getSelector().addVariableProperty(tmpvar, token);
-                    token = tokensIt.next();	//after property name
-                } else {
-                    throw new SPAException("Unsupported variable property: " + token);
-                }
-            } else {
-                if (checkResultPartElement(tmpvar)) {
-                    queryTree.getSelector().addVariable(tmpvar);
-                    queryTree.getSelector().setType("variable");
-                }
+            token = tokensIt.next();
+            if (checkResultPartElement(tmpvar)) {
+                queryTree.getSelector().addVariable(tmpvar);
+                queryTree.getSelector().setType("variable");
             }
         }
 
-        //==========================
         // parse after selector
-        //==========================
         while (tokensIt.hasNext()) {
-            if (icompare(token, "and")) {
+            if (compare(token, "and")) {
                 if (tokensIt.hasNext()) {
-                    token = tokensIt.next(); //after and
+                    token = tokensIt.next();
                 }
                 else {
                     throw new SPAException("Unexpected 'and' at the end.");
                 }
             }
 
-            //==========================
             // parse such that
-            //==========================
-            if (icompare(token, "such")) {
-                token = tokensIt.next(); //after such
-                if (!icompare(token, "that")) {
+            if (compare(token, "such")) {
+                token = tokensIt.next();
+                if (!compare(token, "that")) {
                     throw new SPAException("Expected 'that' after 'such'");
                 }
-                token = tokensIt.next(); //after that
+                token = tokensIt.next();
 
-                while (true) {
+                boolean end = false;
+                while (!end) {
                     String tmpvar = token.toLowerCase();
                     token = tokensIt.next();
                     if (!token.equals("(")) {
                         throw new SPAException("Expected '(' got: " + token);
                     }
-                    token = tokensIt.next(); //after (
+                    token = tokensIt.next();
                     String lhs = token;
                     token = tokensIt.next();
                     if (!token.equals(",")) {
                         throw new SPAException("Expected ',' got: " + token);
                     }
-                    token = tokensIt.next(); //after ,
+                    token = tokensIt.next();
                     String rhs = token;
                     token = tokensIt.next();
                     if (!token.equals(")")) {
@@ -178,84 +161,83 @@ public class QueriesParser {
                     queryTree.getClosureTable().add(new Closure(tmpvar, lhs, rhs));
 
                     if (tokensIt.hasNext()) {
-                        token = tokensIt.next(); //after )
+                        token = tokensIt.next();
                     }
                     if (tokensIt.hasNext()) {
-                        if (!icompare(token, "and")) {
-                            break;
+                        if (!compare(token, "and")) {
+                            end = true;
                         } else {
-                            token = tokensIt.next(); //after and
+                            token = tokensIt.next();
                         }
                     } else {
-                        break;
+                        end = true;
                     }
                 }
             }
-            //==========================
-            // parse with
-            //==========================
-            else if (icompare(token, "with")) {
-                token = tokensIt.next(); //after with
 
-                while (true) {
+            // parse with
+            else if (compare(token, "with")) {
+                token = tokensIt.next();
+
+                boolean end = false;
+                while (!end) {
                     With tmp = new With();
                     tmp.setLhsVarName(token);
-                    token = tokensIt.next(); //after lhs var name
+                    token = tokensIt.next();
 
                     if (token.equals(".")) {
-                        token = tokensIt.next(); //after .
+                        token = tokensIt.next();
                         token = token.replace("#", "");
                         tmp.setLhsIsProperty(true);
                         tmp.setLhsPropertyName(token);
-                        token = tokensIt.next(); //after property name
+                        token = tokensIt.next();
                     }
 
                     tmp.setOperand(token);
-                    token = tokensIt.next(); //after operand = or other if exists
+                    token = tokensIt.next();
                     tmp.setRhsVarName(token);
 
                     if (tokensIt.hasNext()) {
-                        token = tokensIt.next(); //after rhs var name
+                        token = tokensIt.next();
                         if (token.equals(".")) {
-                            token = tokensIt.next(); //after .
+                            token = tokensIt.next();
                             tmp.setRhsIsProperty(true);
                             tmp.setRhsPropertyName(token);
 
                             if (tokensIt.hasNext()) {
-                                token = tokensIt.next(); //after rhs property name
+                                token = tokensIt.next();
                             }
                         }
                     }
                     queryTree.getWithTable().add(tmp);
 
                     if (tokensIt.hasNext()) {
-                        if (!icompare(token, "and")) {
-                            break;
+                        if (!compare(token, "and")) {
+                            end = true;
                         } else {
-                            token = tokensIt.next(); //after and
+                            token = tokensIt.next();
                         }
                     } else {
-                        break;
+                        end = true;
                     }
                 }
             }
-            //==========================
+
             // parse pattern
-            //==========================
-            else if (icompare(token, "pattern")) {
-                token = tokensIt.next(); //after pattern
+            else if (compare(token, "pattern")) {
+                token = tokensIt.next();
                 String tmpvar = token;
-                token = tokensIt.next(); //after var name
+                token = tokensIt.next();
                 if (!token.equals("(")) {
                     throw new SPAException("Expected '(' got: " + token);
                 }
-                token = tokensIt.next(); //after (
+                token = tokensIt.next();
                 String lhs = token;
                 token = tokensIt.next();
                 if (!token.equals(",")) {
                     throw new SPAException("Expected ',' got: " + token);
                 }
-                token = tokensIt.next(); //after ,
+                token = tokensIt.next();
                 String rhs = "";
                 while (tokensIt.hasNext() && !token.equals(")")) {
                     rhs += token;
@@ -266,7 +248,7 @@ public class QueriesParser {
                 }
                 queryTree.getPatternTable().add(new Pattern(tmpvar, lhs, rhs));
                 if (tokensIt.hasNext()) {
-                    token = tokensIt.next(); //after )
+                    token = tokensIt.next();
                 }
             }
             else {
@@ -276,17 +258,14 @@ public class QueriesParser {
     }
 
     private boolean checkResultPartElement(String token) throws SPAException {
-        if (icompare(token, "procedure") || icompare(token, "prog_line") ||
-                icompare(token, "stmt") || icompare(token, "stmtlist") ||
-                icompare(token, "stmtlst") || icompare(token, "statement") ||
-                icompare(token, "assign") || icompare(token, "while") ||
-                icompare(token, "if") || icompare(token, "var") ||
-                icompare(token, "variable") || icompare(token, "call") ||
-                icompare(token, "const") || icompare(token, "constant")) {
+        if (compare(token, "procedure") || compare(token, "prog_line") || compare(token, "stmt") || compare(token, "stmtlist") ||
+                compare(token, "stmtlst") || compare(token, "statement") || compare(token, "assign") || compare(token, "while") ||
+                compare(token, "if") || compare(token, "var") || compare(token, "variable") || compare(token, "call") ||
+                compare(token, "const") || compare(token, "constant")) {
             return true;
         } else {
             for (Predicate predicate : queryTree.getPredTable()) {
-                if (icompare(predicate.getValue(), token)) {
+                if (compare(predicate.getValue(), token)) {
                     return true;
                 }
             }
@@ -294,8 +273,8 @@ public class QueriesParser {
         throw new SPAException("Invalid searching result element: " + token);
     }
 
-    private boolean icompare(String s1, String s2) {
-        return s1.toLowerCase().equals(s2);
+    private boolean compare(String s1, String s2) {
+        return s1.toLowerCase().equals(s2.toLowerCase());
     }
 
     public QueryTree getQueryTree() {
