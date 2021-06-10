@@ -1,11 +1,11 @@
 package spa.common;
 
-public class Closure {
+public class Relation {
     private String type;
     private String leftParam;
     private String rightParam;
 
-    public Closure(String type, String leftParam, String rightParam) {
+    public Relation(String type, String leftParam, String rightParam) {
         this.type = type;
         this.leftParam = leftParam;
         this.rightParam = rightParam;
@@ -37,7 +37,7 @@ public class Closure {
 
     @Override
     public String toString() {
-        return "Closure{" +
+        return "Relation{" +
                 "type='" + type + '\'' +
                 ", leftParam='" + leftParam + '\'' +
                 ", rightParam='" + rightParam + '\'' +

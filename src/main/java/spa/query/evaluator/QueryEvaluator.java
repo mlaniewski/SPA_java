@@ -17,29 +17,29 @@ public class QueryEvaluator {
 
     private boolean boolResult;
     private String[] tmpResult;
-    private List<String> valueOfPred;
-    private Map<String, Integer> indexOfPred;
-    private List<ClosureResult> closureResults;
-    private Map<Integer, List<ClosureResult>> dependentClosures;
+    private List<String> valueOfPredicate;
+    private Map<String, Integer> indexOfPredicate;
+    private List<RelationResult> relationResults;
+    private Map<Integer, List<RelationResult>> dependentRelations;
     private Map<Integer, Set<String>> possibleValues;
     private List<List<String>> resultTable;
     //relations
-    private ClosureResultEvaluator next;
-    private ClosureResultEvaluator follows;
-    private ClosureResultEvaluator parent;
-    private ClosureResultEvaluator calls;
-    private ClosureResultEvaluator uses;
-    private ClosureResultEvaluator modifies;
+    private RelationResultEvaluator next;
+    private RelationResultEvaluator follows;
+    private RelationResultEvaluator parent;
+    private RelationResultEvaluator calls;
+    private RelationResultEvaluator uses;
+    private RelationResultEvaluator modifies;
 
     public QueryEvaluator(QueryTree queryTree, PKB pkb) {
         this.queryTree = queryTree;
         this.pkb = pkb;
         this.results = new ArrayList<>();
         this.tmpResult = new String[1000];
-        this.valueOfPred = new ArrayList<>();
-        this.indexOfPred = new HashMap<>();
-        this.closureResults = new ArrayList<>();
-        this.dependentClosures = new HashMap<>();
+        this.valueOfPredicate = new ArrayList<>();
+        this.indexOfPredicate = new HashMap<>();
+        this.relationResults = new ArrayList<>();
+        this.dependentRelations = new HashMap<>();
         this.possibleValues = new HashMap<>();
         this.resultTable = new LinkedList<>();
         this.next = new Next(pkb);
@@ -52,30 +52,30 @@ public class QueryEvaluator {
 
     public void prepareResults() throws SPAException {
         int i = 0;
-        for (Predicate predicate : queryTree.getPredTable()) {
-            valueOfPred.add(predicate.getValue());
-            indexOfPred.put(predicate.getValue(), i++);
+        for (Predicate predicate : queryTree.getPredicateList()) {
+            valueOfPredicate.add(predicate.getValue());
+            indexOfPredicate.put(predicate.getValue(), i++);
         }
-        for (Closure closure : queryTree.getClosureTable()) {
-            ClosureResult result = getClosureResult(closure);
+        for (Relation relation : queryTree.getRelationList()) {
+            RelationResult result = getRelationResult(relation);
             if (result.getResultType().equals("MAP") && result.getPq().isEmpty()) {
                 continue;
             }
-            closureResults.add(result);
+            relationResults.add(result);
         }
-        for (Pattern pattern : queryTree.getPatternTable()) {
-            ClosureResult result = getPatternResult(pattern);
-            closureResults.add(result);
+        for (Pattern pattern : queryTree.getPatternList()) {
+            RelationResult result = getPatternResult(pattern);
+            relationResults.add(result);
         }
-        for (With with : queryTree.getWithTable()) {
-            ClosureResult result = getWithResult(with);
-            closureResults.add(result);
+        for (With with : queryTree.getWithList()) {
+            RelationResult result = getWithResult(with);
+            relationResults.add(result);
         }
-        for (ClosureResult cr : closureResults) {
+        for (RelationResult cr : relationResults) {
             if (cr.getResultType().equals("MAP")) {
-                int idx = Math.max(indexOfPred.get(cr.getP()), indexOfPred.get(cr.getQ()));
-                dependentClosures.computeIfAbsent(idx, k -> new LinkedList<>());
-                dependentClosures.get(idx).add(cr);
+                int idx = Math.max(indexOfPredicate.get(cr.getP()), indexOfPredicate.get(cr.getQ()));
+                dependentRelations.computeIfAbsent(idx, k -> new LinkedList<>());
+                dependentRelations.get(idx).add(cr);
             }
         }
     }
@@ -83,7 +83,7 @@ public class QueryEvaluator {
     public void performEvaluation() {
         boolean foundFalseResult = false;
         boolean foundSetOrMap = false;
-        for (ClosureResult cr : closureResults) {
+        for (RelationResult cr : relationResults) {
             if (cr.getResultType().equals("BOOL") && !cr.isBoolResult()) {
                 foundFalseResult = true;
                 break;
@@ -111,7 +111,7 @@ public class QueryEvaluator {
         } else if (queryTree.getSelector().getType().equals("variable")) {
             Set<String> res = new HashSet<>();
             for (List<String> it : resultTable) {
-                res.add(it.get(indexOfPred.get(queryTree.getSelector().getVariables().get(0))));
+                res.add(it.get(indexOfPredicate.get(queryTree.getSelector().getVariables().get(0))));
             }
             results.addAll(res);
         }
@@ -123,12 +123,12 @@ public class QueryEvaluator {
         }
         for (String val : possibleValues.get(pred)) {
             boolean found = true;
-            if (dependentClosures.get(pred) != null) {
-                for (ClosureResult cr : dependentClosures.get(pred)) {
-                    String depPred = !cr.getP().equals(valueOfPred.get(pred)) ? cr.getP() : cr.getQ();
-                    Map<String, Set<String>> map = !cr.getP().equals(valueOfPred.get(pred)) ? cr.getQp() : cr.getPq();
+            if (dependentRelations.get(pred) != null) {
+                for (RelationResult cr : dependentRelations.get(pred)) {
+                    String depPred = !cr.getP().equals(valueOfPredicate.get(pred)) ? cr.getP() : cr.getQ();
+                    Map<String, Set<String>> map = !cr.getP().equals(valueOfPredicate.get(pred)) ? cr.getQp() : cr.getPq();
                     if (map.get(val) != null) {
-                        if (!map.get(val).contains(String.valueOf(tmpResult[indexOfPred.get(depPred)]))) {
+                        if (!map.get(val).contains(String.valueOf(tmpResult[indexOfPredicate.get(depPred)]))) {
                             found = false;
                             break;
                         }
@@ -137,11 +137,11 @@ public class QueryEvaluator {
             }
             if (found) {
                 tmpResult[pred] = val;
-                if (pred < queryTree.getPredTable().size() - 1) {
+                if (pred < queryTree.getPredicateList().size() - 1) {
                     findResult(pred + 1);
                 } else {
                     List<String> result = new ArrayList<>();
-                    result.addAll(Arrays.asList(tmpResult).subList(0, queryTree.getPredTable().size()));
+                    result.addAll(Arrays.asList(tmpResult).subList(0, queryTree.getPredicateList().size()));
                     resultTable.add(result);
                 }
             }
@@ -151,9 +151,9 @@ public class QueryEvaluator {
     private void findPossibleValues() {
         Set<Integer> updatedPreds = new HashSet<>();
 
-        if (closureResults.isEmpty()) {
+        if (relationResults.isEmpty()) {
             int i = 0;
-            for (Predicate pred : queryTree.getPredTable()) {
+            for (Predicate pred : queryTree.getPredicateList()) {
                 List<Node<ASTNode>> allVals = pkb.getAllValues(pred.getType());
                 for (Node<ASTNode> val : allVals) {
                     possibleValues.computeIfAbsent(i, k -> new HashSet<>());
@@ -163,16 +163,16 @@ public class QueryEvaluator {
             }
         }
 
-        for (ClosureResult cr : closureResults) {
+        for (RelationResult cr : relationResults) {
             int pred;
             if (cr.getResultType().equals("SET")) {
-                pred = indexOfPred.get(cr.getP());
+                pred = indexOfPredicate.get(cr.getP());
                 updatePossibleValues(pred, cr.getVals(), updatedPreds.contains(pred));
                 updatedPreds.add(pred);
             } else if (cr.getResultType().equals("MAP")) {
                 for (int i = 0; i < 2; i++) {
                     Set<String> tmpValues = new HashSet<>();
-                    pred = indexOfPred.get(i == 0 ? cr.getP() : cr.getQ());
+                    pred = indexOfPredicate.get(i == 0 ? cr.getP() : cr.getQ());
                     Map<String, Set<String>> m = i == 0 ? cr.getPq() : cr.getQp();
                     m.forEach((k, v) -> {
                         tmpValues.add(k);
@@ -202,123 +202,123 @@ public class QueryEvaluator {
         }
     }
 
-    private ClosureResult getClosureResult(Closure closure) throws SPAException {
-        ClosureResult closureResult = new ClosureResult();
-        boolean _transient = closure.getType().endsWith("*");
-        String relation = _transient ? closure.getType().substring(0, closure.getType().length() - 1) : closure.getType();
+    private RelationResult getRelationResult(Relation relation) throws SPAException {
+        RelationResult relationResult = new RelationResult();
+        boolean _transient = relation.getType().endsWith("*");
+        String relationName = _transient ? relation.getType().substring(0, relation.getType().length() - 1) : relation.getType();
 
         Predicate p1 = new Predicate();
         Predicate p2 = new Predicate();
-        for (Predicate predicate : queryTree.getPredTable()) {
-            if (closure.getLeftParam().equals(predicate.getValue())) {
+        for (Predicate predicate : queryTree.getPredicateList()) {
+            if (relation.getLeftParam().equals(predicate.getValue())) {
                 p1 = predicate;
-            } else if (closure.getRightParam().equals(predicate.getValue())) {
+            } else if (relation.getRightParam().equals(predicate.getValue())) {
                 p2 = predicate;
             }
         }
 
         if (p1.getType().isEmpty() && p2.getType().isEmpty()) { // 0 predykatow
-            switch (relation) {
+            switch (relationName) {
                 case "next":
-                    closureResult = next.getResultWhenNoPredicate(closure, _transient);
+                    relationResult = next.getResultWhenNoPredicate(relation, _transient);
                     break;
                 case "follows":
-                    closureResult = follows.getResultWhenNoPredicate(closure, _transient);
+                    relationResult = follows.getResultWhenNoPredicate(relation, _transient);
                     break;
                 case "parent":
-                    closureResult = parent.getResultWhenNoPredicate(closure, _transient);
+                    relationResult = parent.getResultWhenNoPredicate(relation, _transient);
                     break;
                 case "calls":
-                    closureResult = calls.getResultWhenNoPredicate(closure, _transient);
+                    relationResult = calls.getResultWhenNoPredicate(relation, _transient);
                     break;
                 case "uses":
-                    closureResult = uses.getResultWhenNoPredicate(closure, _transient);
+                    relationResult = uses.getResultWhenNoPredicate(relation, _transient);
                     break;
                 case "modifies":
-                    closureResult = modifies.getResultWhenNoPredicate(closure, _transient);
+                    relationResult = modifies.getResultWhenNoPredicate(relation, _transient);
                     break;
             }
-            closureResult.setResultType("BOOL");
+            relationResult.setResultType("BOOL");
         }
         else if (p2.getType().isEmpty()) { // predykat z lewej
-            switch (relation) {
+            switch (relationName) {
                 case "next":
-                    closureResult = next.getResultWhenLeftPredicate(closure, p1, _transient);
+                    relationResult = next.getResultWhenLeftPredicate(relation, p1, _transient);
                     break;
                 case "follows":
-                    closureResult = follows.getResultWhenLeftPredicate(closure, p1, _transient);
+                    relationResult = follows.getResultWhenLeftPredicate(relation, p1, _transient);
                     break;
                 case "parent":
-                    closureResult = parent.getResultWhenLeftPredicate(closure, p1, _transient);
+                    relationResult = parent.getResultWhenLeftPredicate(relation, p1, _transient);
                     break;
                 case "calls":
-                    closureResult = calls.getResultWhenLeftPredicate(closure, p1, _transient);
+                    relationResult = calls.getResultWhenLeftPredicate(relation, p1, _transient);
                     break;
                 case "uses":
-                    closureResult = uses.getResultWhenLeftPredicate(closure, p1, _transient);
+                    relationResult = uses.getResultWhenLeftPredicate(relation, p1, _transient);
                     break;
                 case "modifies":
-                    closureResult = modifies.getResultWhenLeftPredicate(closure, p1, _transient);
+                    relationResult = modifies.getResultWhenLeftPredicate(relation, p1, _transient);
                     break;
             }
-            closureResult.setResultType("SET");
-            closureResult.setP(p1.getValue());
+            relationResult.setResultType("SET");
+            relationResult.setP(p1.getValue());
         }
         else if (p1.getType().isEmpty()) { // predykat z prawej
-            switch (relation) {
+            switch (relationName) {
                 case "next":
-                    closureResult = next.getResultWhenRightPredicate(closure, p2, _transient);
+                    relationResult = next.getResultWhenRightPredicate(relation, p2, _transient);
                     break;
                 case "follows":
-                    closureResult = follows.getResultWhenRightPredicate(closure, p2, _transient);
+                    relationResult = follows.getResultWhenRightPredicate(relation, p2, _transient);
                     break;
                 case "parent":
-                    closureResult = parent.getResultWhenRightPredicate(closure, p2, _transient);
+                    relationResult = parent.getResultWhenRightPredicate(relation, p2, _transient);
                     break;
                 case "calls":
-                    closureResult = calls.getResultWhenRightPredicate(closure, p2, _transient);
+                    relationResult = calls.getResultWhenRightPredicate(relation, p2, _transient);
                     break;
                 case "uses":
-                    closureResult = uses.getResultWhenRightPredicate(closure, p2, _transient);
+                    relationResult = uses.getResultWhenRightPredicate(relation, p2, _transient);
                     break;
                 case "modifies":
-                    closureResult = modifies.getResultWhenRightPredicate(closure, p2, _transient);
+                    relationResult = modifies.getResultWhenRightPredicate(relation, p2, _transient);
                     break;
             }
-            closureResult.setResultType("SET");
-            closureResult.setP(p2.getValue());
+            relationResult.setResultType("SET");
+            relationResult.setP(p2.getValue());
         }
         else { // 2 predykaty
-            switch (relation) {
+            switch (relationName) {
                 case "next":
-                    closureResult = next.getResultWhenBothPredicates(p1, p2, _transient);
+                    relationResult = next.getResultWhenBothPredicates(p1, p2, _transient);
                     break;
                 case "follows":
-                    closureResult = follows.getResultWhenBothPredicates(p1, p2, _transient);
+                    relationResult = follows.getResultWhenBothPredicates(p1, p2, _transient);
                     break;
                 case "parent":
-                    closureResult = parent.getResultWhenBothPredicates(p1, p2, _transient);
+                    relationResult = parent.getResultWhenBothPredicates(p1, p2, _transient);
                     break;
                 case "calls":
-                    closureResult = calls.getResultWhenBothPredicates(p1, p2, _transient);
+                    relationResult = calls.getResultWhenBothPredicates(p1, p2, _transient);
                     break;
                 case "uses":
-                    closureResult = uses.getResultWhenBothPredicates(p1, p2, _transient);
+                    relationResult = uses.getResultWhenBothPredicates(p1, p2, _transient);
                     break;
                 case "modifies":
-                    closureResult = modifies.getResultWhenBothPredicates(p1, p2, _transient);
+                    relationResult = modifies.getResultWhenBothPredicates(p1, p2, _transient);
                     break;
             }
-            closureResult.setResultType("MAP");
-            closureResult.setP(p1.getValue());
-            closureResult.setQ(p2.getValue());
+            relationResult.setResultType("MAP");
+            relationResult.setP(p1.getValue());
+            relationResult.setQ(p2.getValue());
         }
 
-        return closureResult;
+        return relationResult;
     }
 
-    private ClosureResult getPatternResult(Pattern pattern) {
-        ClosureResult result = new ClosureResult();
+    private RelationResult getPatternResult(Pattern pattern) {
+        RelationResult result = new RelationResult();
         List<Node<ASTNode>> nodes = pkb.getPattern(pattern.getLeftParam(), pattern.getRightParam());
         if (nodes.isEmpty()) {
             result.setResultType("BOOL");
@@ -334,22 +334,22 @@ public class QueryEvaluator {
         return result;
     }
 
-    private ClosureResult getWithResult(With with) {
-        ClosureResult closureResult = new ClosureResult();
+    private RelationResult getWithResult(With with) {
+        RelationResult relationResult = new RelationResult();
         if (with.getLeftParamPropertyName().equals(with.getRightParamPropertyName())) {
-            closureResult.setResultType("MAP");
-            closureResult.setP(with.getLeftParamVarName());
-            closureResult.setQ(with.getRightParamVarName());
+            relationResult.setResultType("MAP");
+            relationResult.setP(with.getLeftParamVarName());
+            relationResult.setQ(with.getRightParamVarName());
             Set<String> allVals = pkb.getAllPropertyValues(with.getLeftParamPropertyName());
             for (String val : allVals) {
-                closureResult.addPq(val, val);
-                closureResult.addQp(val, val);
+                relationResult.addPq(val, val);
+                relationResult.addQp(val, val);
             }
         } else if ((with.getLeftParamPropertyName().equals("value") && with.getRightParamPropertyName().equals("stmt")) ||
                 (with.getLeftParamPropertyName().equals("stmt") && with.getRightParamPropertyName().equals("value"))) {
-            closureResult.setResultType("MAP");
-            closureResult.setP(with.getLeftParamVarName());
-            closureResult.setQ(with.getRightParamVarName());
+            relationResult.setResultType("MAP");
+            relationResult.setP(with.getLeftParamVarName());
+            relationResult.setQ(with.getRightParamVarName());
             Set<String> allVals = new HashSet<>();
             Set<String> leftParamVals = pkb.getAllPropertyValues(with.getLeftParamPropertyName());
             Set<String> rightParamVals = pkb.getAllPropertyValues(with.getRightParamPropertyName());
@@ -359,31 +359,31 @@ public class QueryEvaluator {
                 }
             }
             for (String val : allVals) {
-                closureResult.addPq(val, val);
-                closureResult.addQp(val, val);
+                relationResult.addPq(val, val);
+                relationResult.addQp(val, val);
             }
         } else if (with.getLeftParamPropertyName().equals("value")) {
-            closureResult.setResultType("BOOLEAN");
-            closureResult.setBoolResult(false);
+            relationResult.setResultType("BOOLEAN");
+            relationResult.setBoolResult(false);
             Set<String> constants = pkb.getConstants();
             for (String c : constants) {
                 if (c.equals(with.getRightParamVarName())) {
-                    closureResult.setBoolResult(true);
+                    relationResult.setBoolResult(true);
                     break;
                 }
             }
         } else {
-            closureResult.setResultType("SET");
-            closureResult.setP(with.getLeftParamVarName());
+            relationResult.setResultType("SET");
+            relationResult.setP(with.getLeftParamVarName());
             if (with.getRightParamVarName().startsWith("\"")) {
-                closureResult.addValue(with.getRightParamVarName().substring(1, with.getRightParamVarName().length() - 1));
+                relationResult.addValue(with.getRightParamVarName().substring(1, with.getRightParamVarName().length() - 1));
             }
             else {
-                closureResult.addValue(with.getRightParamVarName());
+                relationResult.addValue(with.getRightParamVarName());
             }
         }
 
-        return closureResult;
+        return relationResult;
     }
 
     public List<String> getResults() {

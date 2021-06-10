@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ClosureResult {
+public class RelationResult {
     private String resultType; // BOOL, SET, MAP
     private boolean boolResult;
     private String p = "";

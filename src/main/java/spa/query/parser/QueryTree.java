@@ -8,28 +8,28 @@ import java.util.List;
 public class QueryTree {
 
     private Selector selector = new Selector();
-    private List<Predicate> predTable = new ArrayList<>();
-    private List<Closure> closureTable = new ArrayList<>();
-    private List<With> withTable = new ArrayList<>();
-    private List<Pattern> patternTable = new ArrayList<>();
+    private List<Predicate> predicateList = new ArrayList<>();
+    private List<Relation> relationList = new ArrayList<>();
+    private List<With> withList = new ArrayList<>();
+    private List<Pattern> patternList = new ArrayList<>();
 
     public Selector getSelector() {
         return selector;
     }
 
-    public List<Predicate> getPredTable() {
-        return predTable;
+    public List<Predicate> getPredicateList() {
+        return predicateList;
     }
 
-    public List<Closure> getClosureTable() {
-        return closureTable;
+    public List<Relation> getRelationList() {
+        return relationList;
     }
 
-    public List<With> getWithTable() {
-        return withTable;
+    public List<With> getWithList() {
+        return withList;
     }
 
-    public List<Pattern> getPatternTable() {
-        return patternTable;
+    public List<Pattern> getPatternList() {
+        return patternList;
     }
 }

@@ -1,7 +1,7 @@
 package spa.relation;
 
-import spa.common.Closure;
-import spa.common.ClosureResult;
+import spa.common.Relation;
+import spa.common.RelationResult;
 import spa.common.NodeFilter;
 import spa.common.Predicate;
 import spa.exception.SPAException;
@@ -11,7 +11,7 @@ import spa.tree.Node;
 
 import java.util.List;
 
-public class Uses implements ClosureResultEvaluator {
+public class Uses implements RelationResultEvaluator {
     private PKB pkb;
     private NodeFilter filter;
 
@@ -25,40 +25,40 @@ public class Uses implements ClosureResultEvaluator {
         Select s such that Modifies(10, "c")
      */
     @Override
-    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
+    public RelationResult getResultWhenNoPredicate(Relation relation, boolean _transient) throws SPAException {
         int leftParamLineNum = 0;
         try {
-            leftParamLineNum = Integer.valueOf(closure.getLeftParam());
+            leftParamLineNum = Integer.valueOf(relation.getLeftParam());
         } catch (NumberFormatException e) { }
 
         String leftParamName = "", rightParamName = "";
-        if (closure.getLeftParam().startsWith("\"")) {
-            leftParamName = closure.getLeftParam().substring(1, closure.getLeftParam().length() - 1);
+        if (relation.getLeftParam().startsWith("\"")) {
+            leftParamName = relation.getLeftParam().substring(1, relation.getLeftParam().length() - 1);
         }
-        if (closure.getRightParam().startsWith("\"")) {
-            rightParamName = closure.getRightParam().substring(1, closure.getRightParam().length() - 1);
+        if (relation.getRightParam().startsWith("\"")) {
+            rightParamName = relation.getRightParam().substring(1, relation.getRightParam().length() - 1);
         }
 
-        ClosureResult closureResult = new ClosureResult();
+        RelationResult relationResult = new RelationResult();
         if ((leftParamLineNum != 0 || !leftParamName.isEmpty()) && !rightParamName.isEmpty()) {
             Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLine(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
-            closureResult.setBoolResult(pkb.isUses(n, rightParamName));
+            relationResult.setBoolResult(pkb.isUses(n, rightParamName));
         } else if (leftParamLineNum != 0 || !leftParamName.isEmpty()) {
             Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLine(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
-            closureResult.setBoolResult(!pkb.getUsedBy(n).isEmpty());
+            relationResult.setBoolResult(!pkb.getUsedBy(n).isEmpty());
         } else if (!rightParamName.isEmpty()) {
-            closureResult.setBoolResult(!pkb.getUsing(rightParamName).isEmpty());
+            relationResult.setBoolResult(!pkb.getUsing(rightParamName).isEmpty());
         } else {
             List<String> vars = pkb.getAllVariables();
-            closureResult.setBoolResult(false);
+            relationResult.setBoolResult(false);
             for (String var : vars) {
                 if (!pkb.getUsing(var).isEmpty()) {
-                    closureResult.setBoolResult(true);
+                    relationResult.setBoolResult(true);
                     break;
                 }
             }
         }
-        return closureResult;
+        return relationResult;
     }
 
     /*
@@ -66,28 +66,28 @@ public class Uses implements ClosureResultEvaluator {
         Select s such that Uses(s, "c")
      */
     @Override
-    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
+    public RelationResult getResultWhenLeftPredicate(Relation relation, Predicate p1, boolean _transient) throws SPAException {
         String rightParamName = "";
-        if (closure.getRightParam().startsWith("\"")) {
-            rightParamName = closure.getRightParam().substring(1, closure.getRightParam().length() - 1);
+        if (relation.getRightParam().startsWith("\"")) {
+            rightParamName = relation.getRightParam().substring(1, relation.getRightParam().length() - 1);
         }
 
-        ClosureResult closureResult = new ClosureResult();
+        RelationResult relationResult = new RelationResult();
         if (!rightParamName.isEmpty()) { // zmienna
             List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getUsing(rightParamName), p1.getType());
             for (Node<ASTNode> res : results) {
-                closureResult.addValue(res.getData().nodeToString());
+                relationResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<String> allVars = pkb.getAllVariables();
             for (String var : allVars) {
                 List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getUsing(var), p1.getType());
                 for (Node<ASTNode> res : results) {
-                    closureResult.addValue(res.getData().nodeToString());
+                    relationResult.addValue(res.getData().nodeToString());
                 }
             }
         }
-        return closureResult;
+        return relationResult;
     }
 
     /*
@@ -98,23 +98,23 @@ public class Uses implements ClosureResultEvaluator {
         Select v such that Uses(23, v)
      */
     @Override
-    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
+    public RelationResult getResultWhenRightPredicate(Relation relation, Predicate p2, boolean _transient) throws SPAException {
         int leftParamLineNum = 0;
         try {
-            leftParamLineNum = Integer.valueOf(closure.getLeftParam());
+            leftParamLineNum = Integer.valueOf(relation.getLeftParam());
         } catch (NumberFormatException e) { }
 
         String leftParamName = "";
-        if (closure.getLeftParam().startsWith("\"")) {
-            leftParamName = closure.getLeftParam().substring(1, closure.getLeftParam().length() - 1);
+        if (relation.getLeftParam().startsWith("\"")) {
+            leftParamName = relation.getLeftParam().substring(1, relation.getLeftParam().length() - 1);
         }
 
-        ClosureResult closureResult = new ClosureResult();
+        RelationResult relationResult = new RelationResult();
         if (leftParamLineNum != 0 || !leftParamName.isEmpty()) { // stmt lub proc
             Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLine(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
             List<String> results = pkb.getUsedBy(n);
             for (String res : results) {
-                closureResult.addValue(res);
+                relationResult.addValue(res);
             }
         } else { // _
             List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
@@ -123,11 +123,11 @@ public class Uses implements ClosureResultEvaluator {
             for (Node<ASTNode> val : allVals) {
                 List<String> results = pkb.getUsedBy(val);
                 for (String res : results) {
-                    closureResult.addValue(res);
+                    relationResult.addValue(res);
                 }
             }
         }
-        return closureResult;
+        return relationResult;
     }
 
     /*
@@ -135,8 +135,8 @@ public class Uses implements ClosureResultEvaluator {
         Select v such that Uses(a, v)
      */
     @Override
-    public ClosureResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
-        ClosureResult closureResult = new ClosureResult();
+    public RelationResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
+        RelationResult relationResult = new RelationResult();
         List<Node<ASTNode>> procNodes = pkb.getAllValues("procedure");
         List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
         allVals.addAll(procNodes);
@@ -145,16 +145,16 @@ public class Uses implements ClosureResultEvaluator {
         for (Node<ASTNode> val : allPVals) {
             List<String> pResults = pkb.getUsedBy(val);
             for (String r : pResults) {
-                closureResult.addPq(val.getData().nodeToString(), r);
+                relationResult.addPq(val.getData().nodeToString(), r);
             }
         }
         List<String> allQVals = pkb.getAllVariables();
         for (String val : allQVals) {
             List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getUsing(val), p1.getType());
             for (Node<ASTNode> r : qResults) {
-                closureResult.addQp(val, r.getData().nodeToString());
+                relationResult.addQp(val, r.getData().nodeToString());
             }
         }
-        return closureResult;
+        return relationResult;
     }
 }

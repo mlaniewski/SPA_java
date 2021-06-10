@@ -1,7 +1,7 @@
 package spa.relation;
 
-import spa.common.Closure;
-import spa.common.ClosureResult;
+import spa.common.Relation;
+import spa.common.RelationResult;
 import spa.common.NodeFilter;
 import spa.common.Predicate;
 import spa.exception.SPAException;
@@ -11,7 +11,7 @@ import spa.tree.Node;
 
 import java.util.List;
 
-public class Follows implements ClosureResultEvaluator {
+public class Follows implements RelationResultEvaluator {
     private PKB pkb;
     private NodeFilter filter;
 
@@ -25,31 +25,31 @@ public class Follows implements ClosureResultEvaluator {
         Select BOOLEAN such that Follows(8, 9)
      */
     @Override
-    public ClosureResult getResultWhenNoPredicate(Closure closure, boolean _transient) throws SPAException {
+    public RelationResult getResultWhenNoPredicate(Relation relation, boolean _transient) throws SPAException {
         int leftParmLineNum = 0, rightParmLineNum = 0;
         try {
-            leftParmLineNum = Integer.valueOf(closure.getLeftParam());
-            rightParmLineNum = Integer.valueOf(closure.getRightParam());
+            leftParmLineNum = Integer.valueOf(relation.getLeftParam());
+            rightParmLineNum = Integer.valueOf(relation.getRightParam());
         } catch (NumberFormatException e) { }
 
-        ClosureResult closureResult = new ClosureResult();
+        RelationResult relationResult = new RelationResult();
         if (leftParmLineNum != 0 && rightParmLineNum != 0) {
-            closureResult.setBoolResult(pkb.isFollows(pkb.getStmtByLine(leftParmLineNum), pkb.getStmtByLine(rightParmLineNum), _transient));
+            relationResult.setBoolResult(pkb.isFollows(pkb.getStmtByLine(leftParmLineNum), pkb.getStmtByLine(rightParmLineNum), _transient));
         } else if (leftParmLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLine(leftParmLineNum), _transient).isEmpty());
+            relationResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLine(leftParmLineNum), _transient).isEmpty());
         } else if (rightParmLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getFollowedBy(pkb.getStmtByLine(rightParmLineNum), _transient).isEmpty());
+            relationResult.setBoolResult(!pkb.getFollowedBy(pkb.getStmtByLine(rightParmLineNum), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
-            closureResult.setBoolResult(false);
+            relationResult.setBoolResult(false);
             for (Node<ASTNode> node : nodes) {
                 if (!pkb.getFollowing(node, _transient).isEmpty()) {
-                    closureResult.setBoolResult(true);
+                    relationResult.setBoolResult(true);
                     break;
                 }
             }
         }
-        return closureResult;
+        return relationResult;
     }
 
     /*
@@ -57,28 +57,28 @@ public class Follows implements ClosureResultEvaluator {
         Select s such that Follows(s, 8)
      */
     @Override
-    public ClosureResult getResultWhenLeftPredicate(Closure closure, Predicate p1, boolean _transient) throws SPAException {
+    public RelationResult getResultWhenLeftPredicate(Relation relation, Predicate p1, boolean _transient) throws SPAException {
         int rightParamLineNum = 0;
         try {
-            rightParamLineNum = Integer.valueOf(closure.getRightParam());
+            rightParamLineNum = Integer.valueOf(relation.getRightParam());
         } catch (NumberFormatException e) { }
 
-        ClosureResult closureResult = new ClosureResult();
+        RelationResult relationResult = new RelationResult();
         if (rightParamLineNum != 0) { // numer linii
             List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowedBy(pkb.getStmtByLine(rightParamLineNum), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
-                closureResult.addValue(res.getData().nodeToString());
+                relationResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
             for (Node<ASTNode> val : allVals) {
                 List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowedBy(val, _transient), p1.getType());
                 for (Node<ASTNode> res : results) {
-                    closureResult.addValue(res.getData().nodeToString());
+                    relationResult.addValue(res.getData().nodeToString());
                 }
             }
         }
-        return closureResult;
+        return relationResult;
     }
 
     /*
@@ -86,28 +86,28 @@ public class Follows implements ClosureResultEvaluator {
         Select s such that Follows(9, s)
      */
     @Override
-    public ClosureResult getResultWhenRightPredicate(Closure closure, Predicate p2, boolean _transient) throws SPAException {
+    public RelationResult getResultWhenRightPredicate(Relation relation, Predicate p2, boolean _transient) throws SPAException {
         int leftParamLineNum = 0;
         try {
-            leftParamLineNum = Integer.valueOf(closure.getLeftParam());
+            leftParamLineNum = Integer.valueOf(relation.getLeftParam());
         } catch (NumberFormatException e) { }
 
-        ClosureResult closureResult = new ClosureResult();
+        RelationResult relationResult = new RelationResult();
         if (leftParamLineNum != 0) { // numer linii
             List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowing(pkb.getStmtByLine(leftParamLineNum), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
-                closureResult.addValue(res.getData().nodeToString());
+                relationResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
             for (Node<ASTNode> val : allVals) {
                 List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowing(val, _transient), p2.getType());
                 for (Node<ASTNode> res : results) {
-                    closureResult.addValue(res.getData().nodeToString());
+                    relationResult.addValue(res.getData().nodeToString());
                 }
             }
         }
-        return closureResult;
+        return relationResult;
     }
 
     /*
@@ -115,22 +115,22 @@ public class Follows implements ClosureResultEvaluator {
         Select a pattern a("a", _) such that Follows(w, a)
      */
     @Override
-    public ClosureResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
-        ClosureResult closureResult = new ClosureResult();
+    public RelationResult getResultWhenBothPredicates(Predicate p1, Predicate p2, boolean _transient) {
+        RelationResult relationResult = new RelationResult();
         List<Node<ASTNode>> allPVals = filter.filterNodesByType(pkb.getAllValues("statement"), p1.getType());
         for (Node<ASTNode> val : allPVals) {
             List<Node<ASTNode>> pResults = filter.filterNodesByType(pkb.getFollowing(val, _transient), p2.getType());
             for (Node<ASTNode> r : pResults) {
-                closureResult.addPq(val.getData().nodeToString(), r.getData().nodeToString());
+                relationResult.addPq(val.getData().nodeToString(), r.getData().nodeToString());
             }
         }
         List<Node<ASTNode>> allQVals = filter.filterNodesByType(pkb.getAllValues("statement"), p2.getType());
         for (Node<ASTNode> val : allQVals) {
             List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getFollowedBy(val, _transient), p1.getType());
             for (Node<ASTNode> r : qResults) {
-                closureResult.addQp(val.getData().nodeToString(), r.getData().nodeToString());
+                relationResult.addQp(val.getData().nodeToString(), r.getData().nodeToString());
             }
         }
-        return closureResult;
+        return relationResult;
     }
 }

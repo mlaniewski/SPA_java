@@ -1,6 +1,6 @@
 package spa.query.parser;
 
-import spa.common.Closure;
+import spa.common.Relation;
 import spa.common.Pattern;
 import spa.common.Predicate;
 import spa.common.With;
@@ -86,7 +86,7 @@ public class QueriesParser {
             if (token.equals(",")) {
                 continue;
             }
-            queryTree.getPredTable().add(new Predicate(currentPredicate, token));
+            queryTree.getPredicateList().add(new Predicate(currentPredicate, token));
         }
     }
 
@@ -158,7 +158,7 @@ public class QueriesParser {
                     if (!token.equals(")")) {
                         throw new SPAException("Program expected ')' got: " + token);
                     }
-                    queryTree.getClosureTable().add(new Closure(tmpvar, leftParam, rightParam));
+                    queryTree.getRelationList().add(new Relation(tmpvar, leftParam, rightParam));
 
                     if (tokensIt.hasNext()) {
                         token = tokensIt.next();
@@ -209,7 +209,7 @@ public class QueriesParser {
                             }
                         }
                     }
-                    queryTree.getWithTable().add(tmp);
+                    queryTree.getWithList().add(tmp);
 
                     if (tokensIt.hasNext()) {
                         if (!compare(token, "and")) {
@@ -246,7 +246,7 @@ public class QueriesParser {
                 if (!token.equals(")")) {
                     throw new SPAException("Program expected ')' at the end of pattern, got: " + token);
                 }
-                queryTree.getPatternTable().add(new Pattern(tmpvar, leftParam, rightParam));
+                queryTree.getPatternList().add(new Pattern(tmpvar, leftParam, rightParam));
                 if (tokensIt.hasNext()) {
                     token = tokensIt.next();
                 }
@@ -264,7 +264,7 @@ public class QueriesParser {
                 compare(token, "const") || compare(token, "constant")) {
             return true;
         } else {
-            for (Predicate predicate : queryTree.getPredTable()) {
+            for (Predicate predicate : queryTree.getPredicateList()) {
                 if (compare(predicate.getValue(), token)) {
                     return true;
                 }
