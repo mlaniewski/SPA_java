@@ -72,9 +72,9 @@ public class ParserImpl implements Parser {
     }
 
     private Node<ASTNode> parseProcedure() throws SPAException {
-        validate(match(token, "procedure"), String.format("Expected 'procedure'. Found '%s'.", token));
+        validate(match(token, "procedure"), String.format("Program expected 'procedure'. Got '%s'.", token));
         token = tokens.next();
-        validate(matchName(token), String.format("Expected procedure name. Found '%s'.", token));
+        validate(matchName(token), String.format("Program expected procedure name. Got '%s'.", token));
         procName = token;
         token = tokens.next();
         Node<ASTNode> procNode = ast.createNode(NodeType.PROCEDURE);
@@ -84,7 +84,7 @@ public class ParserImpl implements Parser {
     }
 
     private Node<ASTNode> parseStmtLst(NodeType nodeType) throws SPAException {
-        validate(match(token, "{"), String.format("Expected '{'. Found '%s'.", token));
+        validate(match(token, "{"), String.format("Program expected '{'. Got '%s'.", token));
         token = tokens.next();
         validate(!match(token, "}"), "StmtLst must have at least one stmt.");
         Node<ASTNode> stmtLstNode = ast.createNode(nodeType);
@@ -112,19 +112,19 @@ public class ParserImpl implements Parser {
 
     private Node<ASTNode> parseCall() throws SPAException {
         token = tokens.next();
-        validate(matchName(token), String.format("Expected calle procedure name. Found '%s'.", token));
+        validate(matchName(token), String.format("Program expected called_by procedure name. Got '%s'.", token));
         Node<ASTNode> callNode = ast.createNode(NodeType.CALL);
         callNode.getData().putParam(NodeParamType.CALLER, procName);
         callNode.getData().putParam(NodeParamType.CALLED_BY, token);
         token = tokens.next();
-        validate(match(token, ";"), String.format("Expected ';'. Found '%s'.", token));
+        validate(match(token, ";"), String.format("Program expected ';'. Got '%s'.", token));
         token = tokens.next();
         return callNode;
     }
 
     private Node<ASTNode> parseWhile() throws SPAException {
         token = tokens.next();
-        validate(matchName(token), String.format("Expected while. Found '%s'.", token));
+        validate(matchName(token), String.format("Program expected while. Got '%s'.", token));
         Node<ASTNode> whileNODE = ast.createNode(NodeType.WHILE);
         whileNODE.getData().putParam(NodeParamType.COND, token);
         token = tokens.next();
@@ -135,43 +135,43 @@ public class ParserImpl implements Parser {
 
     private Node<ASTNode> parseIf() throws SPAException {
         token = tokens.next();
-        validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
+        validate(matchName(token), String.format("Program expected variable name. Got '%s'.", token));
         Node<ASTNode> ifNode = ast.createNode(NodeType.IF);
         ifNode.getData().putParam(NodeParamType.COND, token);
         token = tokens.next();
-        validate(match(token, "then"), String.format("Expected 'then'. Found '%s'.", token));
+        validate(match(token, "then"), String.format("Program expected 'then'. Got '%s'.", token));
         token = tokens.next();
         ast.addChild(ifNode, parseStmtLst(NodeType.THEN));
-        validate(match(token, "else"), String.format("Expected 'else'. Found '%s'.", token));
+        validate(match(token, "else"), String.format("Program expected 'else'. Got '%s'.", token));
         token = tokens.next();
         ast.addChild(ifNode, parseStmtLst(NodeType.ELSE));
         return ifNode;
     }
 
     private Node<ASTNode> parseAssignment() throws SPAException {
-        validate(matchName(token), String.format("Expected variable name. Found '%s'.", token));
+        validate(matchName(token), String.format("Program expected variable name. Got '%s'.", token));
         Node<ASTNode> assignment = ast.createNode(NodeType.ASSIGN);
         Node<ASTNode> variable = ast.createNode(NodeType.VARIABLE);
         variable.getData().putParam(NodeParamType.NAME, token);
         ast.addChild(assignment, variable);
         token = tokens.next();
-        validate(match(token, "="), String.format("Expected '='. Found '%s'.", token));
+        validate(match(token, "="), String.format("Program expected '='. Got '%s'.", token));
         token = tokens.next();
         Node<ASTNode> expression = ast.createNode(NodeType.EXPRESSION);
         ast.addChild(expression, parseExpression());
         ast.addChild(assignment, expression);
-        validate(match(token, ";"), String.format("Expected ';'. Found '%s'.", token));
+        validate(match(token, ";"), String.format("Program expected ';'. Got '%s'.", token));
         token = tokens.next();
         return assignment;
     }
 
     private Node<ASTNode> parseExpression() throws SPAException {
-        Node<ASTNode> expr = parseTerm();
+        Node<ASTNode> expr = parsePhrase();
         while (match(token, "+") || match(token, "-")) {
             String operatorName = token;
             token = tokens.next();
             Node<ASTNode> left = expr;
-            Node<ASTNode> right = parseTerm();
+            Node<ASTNode> right = parsePhrase();
             expr = ast.createNode(NodeType.OPERATOR);
             expr.getData().putParam(NodeParamType.NAME, operatorName);
             ast.addChild(expr, left);
@@ -180,30 +180,30 @@ public class ParserImpl implements Parser {
         return expr;
     }
 
-    private Node<ASTNode> parseTerm() throws SPAException {
-        Node<ASTNode> term = parseFactor();
-        while (match(token, "*"))
-        {
+    private Node<ASTNode> parsePhrase() throws SPAException {
+        Node<ASTNode> phrase = parseParenthesisOrFactor();
+        while (match(token, "*")) {
             token = tokens.next();
-            Node<ASTNode> left = term;
-            Node<ASTNode> right = parseFactor();
-            term = ast.createNode(NodeType.OPERATOR);
-            term.getData().putParam(NodeParamType.NAME, "*");
-            ast.addChild(term, left);
-            ast.addChild(term, right);
+            Node<ASTNode> left = phrase;
+            Node<ASTNode> right = parseParenthesisOrFactor();
+            phrase = ast.createNode(NodeType.OPERATOR);
+            phrase.getData().putParam(NodeParamType.NAME, "*");
+            ast.addChild(phrase, left);
+            ast.addChild(phrase, right);
         }
-        return term;
+        return phrase;
     }
 
-    private Node<ASTNode> parseFactor() throws SPAException {
+    private Node<ASTNode> parseParenthesisOrFactor() throws SPAException {
         Node<ASTNode> factor;
         if (match(token, "(")) {
             token = tokens.next();
             factor = parseExpression();
-            validate(match(token, ")"), String.format("Expected ')'. Found '%s'.",token));
+            validate(match(token, ")"), String.format("Program expected ')'. Got '%s'.",token));
         } else {
+            //factor
             validate(matchName(token) || matchNumber(token),
-                    String.format("Expected variable name or constant. Found '%s'.", token));
+                    String.format("Program expected variable name or constant. Got '%s'.", token));
             factor = ast.createNode(matchNumber(token) ? NodeType.CONSTANT : NodeType.VARIABLE);
             factor.getData().putParam(NodeParamType.NAME, token);
         }

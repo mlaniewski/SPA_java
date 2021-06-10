@@ -33,7 +33,7 @@ public class QueriesParser {
         }
 
         if (tokenIt.hasNext()) {
-            throw new SPAException("Expected 'select' keyword");
+            throw new SPAException("Program expected 'select' keyword");
         }
     }
 
@@ -102,7 +102,7 @@ public class QueriesParser {
 
         String token = tokensIt.next();
         if (!compare(token, "select")) {
-            throw new SPAException("Expected 'select' keyword at the beginning");
+            throw new SPAException("Program expected 'select' keyword at the beginning");
         }
 
         token = tokensIt.next();
@@ -135,7 +135,7 @@ public class QueriesParser {
             if (compare(token, "such")) {
                 token = tokensIt.next();
                 if (!compare(token, "that")) {
-                    throw new SPAException("Expected 'that' after 'such'");
+                    throw new SPAException("Program expected 'that' after 'such'");
                 }
                 token = tokensIt.next();
 
@@ -144,19 +144,19 @@ public class QueriesParser {
                     String tmpvar = token.toLowerCase();
                     token = tokensIt.next();
                     if (!token.equals("(")) {
-                        throw new SPAException("Expected '(' got: " + token);
+                        throw new SPAException("Program expected '(' got: " + token);
                     }
                     token = tokensIt.next();
                     String leftParam = token;
                     token = tokensIt.next();
                     if (!token.equals(",")) {
-                        throw new SPAException("Expected ',' got: " + token);
+                        throw new SPAException("Program expected ',' got: " + token);
                     }
                     token = tokensIt.next();
                     String rightParam = token;
                     token = tokensIt.next();
                     if (!token.equals(")")) {
-                        throw new SPAException("Expected ')' got: " + token);
+                        throw new SPAException("Program expected ')' got: " + token);
                     }
                     queryTree.getClosureTable().add(new Closure(tmpvar, leftParam, rightParam));
 
@@ -229,13 +229,13 @@ public class QueriesParser {
                 String tmpvar = token;
                 token = tokensIt.next();
                 if (!token.equals("(")) {
-                    throw new SPAException("Expected '(' got: " + token);
+                    throw new SPAException("Program expected '(' got: " + token);
                 }
                 token = tokensIt.next();
                 String leftParam = token;
                 token = tokensIt.next();
                 if (!token.equals(",")) {
-                    throw new SPAException("Expected ',' got: " + token);
+                    throw new SPAException("Program expected ',' got: " + token);
                 }
                 token = tokensIt.next();
                 String rightParam = "";
@@ -244,7 +244,7 @@ public class QueriesParser {
                     token = tokensIt.next();
                 }
                 if (!token.equals(")")) {
-                    throw new SPAException("Expected ')' at the end of pattern, got: " + token);
+                    throw new SPAException("Program expected ')' at the end of pattern, got: " + token);
                 }
                 queryTree.getPatternTable().add(new Pattern(tmpvar, leftParam, rightParam));
                 if (tokensIt.hasNext()) {
