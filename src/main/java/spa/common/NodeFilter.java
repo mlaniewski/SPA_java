@@ -18,8 +18,8 @@ public class NodeFilter {
         for (Node<ASTNode> node : nodes) {
             boolean m1 = matchType(node.getData().getNodeType(), type);
             boolean m2 = matchType(node.getData().getNodeType(), type2);
-            boolean e = type2.isEmpty();
-            if (e ? m1 : (m1 || m2)) {
+            boolean isEmpty = type2.isEmpty();
+            if (isEmpty ? m1 : (m1 || m2)) {
                 filteredNodes.add(node);
             }
         }
@@ -27,27 +27,26 @@ public class NodeFilter {
     }
 
     private boolean matchType(NodeType nodeType, String predType) {
-        if (predType.equals("procedure")) {
-            return nodeType == NodeType.PROCEDURE;
-        } else if (predType.equals("statement")) {
-            return nodeType == NodeType.CALL
-                    || nodeType == NodeType.WHILE
-                    || nodeType == NodeType.IF
-                    || nodeType == NodeType.ASSIGN;
-        } else if (predType.equals("assign")) {
-            return nodeType == NodeType.ASSIGN;
-        }
-        else if (predType.equals("while")) {
-            return nodeType == NodeType.WHILE;
-        }
-        else if (predType.equals("if")) {
-            return nodeType == NodeType.IF;
-        } else if (predType.equals("var")) {
-            return nodeType == NodeType.VARIABLE;
-        } else if (predType.equals("call")) {
-            return nodeType == NodeType.CALL;
-        } else if (predType.equals("const")) {
-            return nodeType == NodeType.CONSTANT;
+        switch (predType) {
+            case "procedure":
+                return nodeType == NodeType.PROCEDURE;
+            case "statement":
+                return nodeType == NodeType.CALL
+                        || nodeType == NodeType.WHILE
+                        || nodeType == NodeType.IF
+                        || nodeType == NodeType.ASSIGN;
+            case "assign":
+                return nodeType == NodeType.ASSIGN;
+            case "while":
+                return nodeType == NodeType.WHILE;
+            case "if":
+                return nodeType == NodeType.IF;
+            case "var":
+                return nodeType == NodeType.VARIABLE;
+            case "call":
+                return nodeType == NodeType.CALL;
+            case "const":
+                return nodeType == NodeType.CONSTANT;
         }
         return false;
     }

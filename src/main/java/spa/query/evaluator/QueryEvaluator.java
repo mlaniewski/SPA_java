@@ -64,10 +64,12 @@ public class QueryEvaluator {
             closureResults.add(result);
         }
         for (Pattern pattern : queryTree.getPatternTable()) {
-            closureResults.add(getPatternResult(pattern));
+            ClosureResult result = getPatternResult(pattern);
+            closureResults.add(result);
         }
         for (With with : queryTree.getWithTable()) {
-            closureResults.add(getWithResult(with));
+            ClosureResult result = getWithResult(with);
+            closureResults.add(result);
         }
         for (ClosureResult cr : closureResults) {
             if (cr.getResultType().equals("MAP")) {
@@ -78,7 +80,7 @@ public class QueryEvaluator {
         }
     }
 
-    public void evaluate() {
+    public void performEvaluation() {
         boolean foundFalseResult = false;
         boolean foundSetOrMap = false;
         for (ClosureResult cr : closureResults) {
@@ -116,35 +118,30 @@ public class QueryEvaluator {
     }
 
     private void findResult(int pred) {
-        if (pred >= possibleValues.size()) {
-            return;
-        }
         if (possibleValues.get(pred) == null) {
             return;
         }
         for (String val : possibleValues.get(pred)) {
-            boolean foundValue = true;
+            boolean found = true;
             if (dependentClosures.get(pred) != null) {
                 for (ClosureResult cr : dependentClosures.get(pred)) {
                     String depPred = !cr.getP().equals(valueOfPred.get(pred)) ? cr.getP() : cr.getQ();
                     Map<String, Set<String>> map = !cr.getP().equals(valueOfPred.get(pred)) ? cr.getQp() : cr.getPq();
                     if (map.get(val) != null) {
                         if (!map.get(val).contains(String.valueOf(tmpResult[indexOfPred.get(depPred)]))) {
-                            foundValue = false;
+                            found = false;
                             break;
                         }
                     }
                 }
             }
-            if (foundValue) {
+            if (found) {
                 tmpResult[pred] = val;
                 if (pred < queryTree.getPredTable().size() - 1) {
                     findResult(pred + 1);
                 } else {
                     List<String> result = new ArrayList<>();
-                    for (int i = 0; i < queryTree.getPredTable().size(); i++) {
-                        result.add(tmpResult[i]);
-                    }
+                    result.addAll(Arrays.asList(tmpResult).subList(0, queryTree.getPredTable().size()));
                     resultTable.add(result);
                 }
             }
@@ -152,7 +149,6 @@ public class QueryEvaluator {
     }
 
     private void findPossibleValues() {
-        Set<String> tmpValues = new HashSet<>();
         Set<Integer> updatedPreds = new HashSet<>();
 
         if (closureResults.isEmpty()) {
@@ -175,7 +171,7 @@ public class QueryEvaluator {
                 updatedPreds.add(pred);
             } else if (cr.getResultType().equals("MAP")) {
                 for (int i = 0; i < 2; i++) {
-                    tmpValues.clear();
+                    Set<String> tmpValues = new HashSet<>();
                     pred = indexOfPred.get(i == 0 ? cr.getP() : cr.getQ());
                     Map<String, Set<String>> m = i == 0 ? cr.getPq() : cr.getQp();
                     m.forEach((k, v) -> {
@@ -191,14 +187,14 @@ public class QueryEvaluator {
 
     private void updatePossibleValues(int pred, Set<String> vals, boolean updated) {
         if (updated) {
-            Set<String> intersection = new HashSet<>();
+            Set<String> commonPart = new HashSet<>();
             for (String el : vals) {
                 if (possibleValues.get(pred).contains(el)) {
-                    intersection.add(el);
+                    commonPart.add(el);
                 }
             }
             possibleValues.remove(pred);
-            possibleValues.put(pred, intersection);
+            possibleValues.put(pred, commonPart);
         }
         else {
             possibleValues.computeIfAbsent(pred, k -> new HashSet<>());

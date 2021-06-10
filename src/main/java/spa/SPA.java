@@ -42,7 +42,7 @@ public class SPA {
 
             QueryEvaluator evaluator = new QueryEvaluator(queryTree, pkb);
             evaluator.prepareResults();
-            evaluator.evaluate();
+            evaluator.performEvaluation();
 
             QueryResultProjector projector = new QueryResultProjector();
             projector.printResult(evaluator.getResults());
