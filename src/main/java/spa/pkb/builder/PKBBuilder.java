@@ -15,8 +15,8 @@ public class PKBBuilder {
     private Set<String> constants;
     private Map<Integer, Set<Integer>> callers;
     private Map<Integer, Set<Integer>> callersT;
-    private Map<Integer, Set<Integer>> callees;
-    private Map<Integer, Set<Integer>> calleesT;
+    private Map<Integer, Set<Integer>> calledBy;
+    private Map<Integer, Set<Integer>> calledByT;
     private Map<Integer, Set<String>> modifies;
     private Map<String, Set<Integer>> modified;
     private Map<Integer, Set<String>> uses;
@@ -41,8 +41,8 @@ public class PKBBuilder {
         this.constants = new HashSet<>();
         this.callers = new HashMap<>();
         this.callersT = new HashMap<>();
-        this.callees = new HashMap<>();
-        this.calleesT = new HashMap<>();
+        this.calledBy = new HashMap<>();
+        this.calledByT = new HashMap<>();
         this.modifies = new HashMap<>();
         this.modified = new HashMap<>();
         this.uses = new HashMap<>();
@@ -75,7 +75,7 @@ public class PKBBuilder {
         }
         buildTransientRelation(nextT);
         buildTransientRelation(callersT);
-        buildTransientRelation(calleesT);
+        buildTransientRelation(calledByT);
         buildTransientRelation(childrenT);
         buildInvertedVariableRelation(modifies, modified);
         buildInvertedVariableRelation(uses, used);
@@ -84,8 +84,8 @@ public class PKBBuilder {
 
         return new PKBImpl(callers,
                 callersT,
-                callees,
-                calleesT,
+                calledBy,
+                calledByT,
                 modifies,
                 modified,
                 uses,
@@ -110,17 +110,17 @@ public class PKBBuilder {
         for (Node<ASTNode> callNode : callNodes) {
             ASTNode node = callNode.getData();
             ASTNode caller = ast.getProcedureByName(node.getParam(NodeParamType.CALLER)).getData();
-            ASTNode callee = ast.getProcedureByName(node.getParam(NodeParamType.CALLEE)).getData();
+            ASTNode calledBy = ast.getProcedureByName(node.getParam(NodeParamType.CALLED_BY)).getData();
 
-            callers.computeIfAbsent(caller.getId(), k -> new HashSet<>());
-            callers.get(caller.getId()).add(callee.getId());
-            callees.computeIfAbsent(callee.getId(), k -> new HashSet<>());
-            callees.get(callee.getId()).add(caller.getId());
+            this.callers.computeIfAbsent(caller.getId(), k -> new HashSet<>());
+            this.callers.get(caller.getId()).add(calledBy.getId());
+            this.calledBy.computeIfAbsent(calledBy.getId(), k -> new HashSet<>());
+            this.calledBy.get(calledBy.getId()).add(caller.getId());
             //*
-            callersT.computeIfAbsent(caller.getId(), k -> new HashSet<>());
-            callersT.get(caller.getId()).add(callee.getId());
-            calleesT.computeIfAbsent(callee.getId(), k -> new HashSet<>());
-            calleesT.get(callee.getId()).add(caller.getId());
+            this.callersT.computeIfAbsent(caller.getId(), k -> new HashSet<>());
+            this.callersT.get(caller.getId()).add(calledBy.getId());
+            this.calledByT.computeIfAbsent(calledBy.getId(), k -> new HashSet<>());
+            this.calledByT.get(calledBy.getId()).add(caller.getId());
         }
     }
 
@@ -231,10 +231,10 @@ public class PKBBuilder {
     private void buildModifiesAndUsesCalls(Node<ASTNode> callNode, Set<Integer> tmpCalls) {
         tmpCalls.remove(callNode.getData().getId());
         if (tmpCalls.contains(callNode.getData().getId()) &&
-                !callNode.getData().getParam(NodeParamType.CALLER).equals(callNode.getData().getParam(NodeParamType.CALLEE))) {
+                !callNode.getData().getParam(NodeParamType.CALLER).equals(callNode.getData().getParam(NodeParamType.CALLED_BY))) {
             buildModifiesAndUsesCalls(callNode, tmpCalls);
         }
-        int caleeProcId = ast.getProcedureByName(callNode.getData().getParam(NodeParamType.CALLEE)).getData().getId();
+        int caleeProcId = ast.getProcedureByName(callNode.getData().getParam(NodeParamType.CALLED_BY)).getData().getId();
         modifies.computeIfAbsent(callNode.getData().getId(), k -> new HashSet<>());
         for (String s : modifies.get(caleeProcId)) {
             modifies.get(callNode.getData().getId()).add(s);

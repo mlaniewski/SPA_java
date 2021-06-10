@@ -36,16 +36,16 @@ public class Calls implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (!leftParamName.isEmpty() && !rightParamName.isEmpty()) {
-            closureResult.setBoolResult(pkb.checkCalls(pkb.getProcedureByName(leftParamName), pkb.getProcedureByName(rightParamName), _transient));
+            closureResult.setBoolResult(pkb.isCalls(pkb.getProcedureByName(leftParamName), pkb.getProcedureByName(rightParamName), _transient));
         } else if (!leftParamName.isEmpty()) {
-            closureResult.setBoolResult(!pkb.getCallees(pkb.getProcedureByName(leftParamName), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getCalledBy(pkb.getProcedureByName(leftParamName), _transient).isEmpty());
         } else if (!rightParamName.isEmpty()) {
-            closureResult.setBoolResult(!pkb.getCallers(pkb.getProcedureByName(rightParamName), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getCalling(pkb.getProcedureByName(rightParamName), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("procedure");
             closureResult.setBoolResult(false);
             for (Node<ASTNode> node : nodes) {
-                if (!pkb.getCallees(node, _transient).isEmpty()) {
+                if (!pkb.getCalledBy(node, _transient).isEmpty()) {
                     closureResult.setBoolResult(true);
                     break;
                 }
@@ -67,14 +67,14 @@ public class Calls implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (!rightParamName.isEmpty()) { // nazwa procedury
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallers(pkb.getProcedureByName(rightParamName), _transient), p1.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCalling(pkb.getProcedureByName(rightParamName), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("procedure");
             for (Node<ASTNode> val : allVals) {
-                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallers(val, _transient), p1.getType());
+                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCalling(val, _transient), p1.getType());
                 for (Node<ASTNode> res : results) {
                     closureResult.addValue(res.getData().nodeToString());
                 }
@@ -96,14 +96,14 @@ public class Calls implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (!leftParamName.isEmpty()) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallees(pkb.getProcedureByName(leftParamName), _transient), p2.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCalledBy(pkb.getProcedureByName(leftParamName), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("procedure");
             for (Node<ASTNode> val : allVals) {
-                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCallees(val, _transient), p2.getType());
+                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getCalledBy(val, _transient), p2.getType());
                 for (Node<ASTNode> res : results) {
                     closureResult.addValue(res.getData().nodeToString());
                 }
@@ -121,14 +121,14 @@ public class Calls implements ClosureResultEvaluator {
         ClosureResult closureResult = new ClosureResult();
         List<Node<ASTNode>> allPVals = filter.filterNodesByType(pkb.getAllValues("procedure"), p1.getType());
         for (Node<ASTNode> val : allPVals) {
-            List<Node<ASTNode>> pResults = filter.filterNodesByType(pkb.getCallees(val, _transient), p2.getType());
+            List<Node<ASTNode>> pResults = filter.filterNodesByType(pkb.getCalledBy(val, _transient), p2.getType());
             for (Node<ASTNode> r : pResults) {
                 closureResult.addPq(val.getData().nodeToString(), r.getData().nodeToString());
             }
         }
         List<Node<ASTNode>> allQVals = filter.filterNodesByType(pkb.getAllValues("procedure"), p2.getType());
         for (Node<ASTNode> val : allQVals) {
-            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getCallers(val, _transient), p1.getType());
+            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getCalling(val, _transient), p1.getType());
             for (Node<ASTNode> r : qResults) {
                 closureResult.addQp(val.getData().nodeToString(), r.getData().nodeToString());
             }

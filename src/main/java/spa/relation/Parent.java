@@ -34,11 +34,11 @@ public class Parent implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParamLineNum != 0 && rightParamLineNum != 0) {
-            closureResult.setBoolResult(pkb.checkParent(pkb.getStmtByLineNumber(leftParamLineNum), pkb.getStmtByLineNumber(rightParamLineNum), _transient));
+            closureResult.setBoolResult(pkb.isParent(pkb.getStmtByLine(leftParamLineNum), pkb.getStmtByLine(rightParamLineNum), _transient));
         } else if (leftParamLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getChildren(pkb.getStmtByLineNumber(leftParamLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getChildren(pkb.getStmtByLine(leftParamLineNum), _transient).isEmpty());
         } else if (rightParamLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getParent(pkb.getStmtByLineNumber(rightParamLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getParent(pkb.getStmtByLine(rightParamLineNum), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
             closureResult.setBoolResult(false);
@@ -65,7 +65,7 @@ public class Parent implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (rightParamLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getParent(pkb.getStmtByLineNumber(rightParamLineNum), _transient), p1.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getParent(pkb.getStmtByLine(rightParamLineNum), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
@@ -94,7 +94,7 @@ public class Parent implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParamLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getChildren(pkb.getStmtByLineNumber(leftParamLineNum), _transient), p2.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getChildren(pkb.getStmtByLine(leftParamLineNum), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }

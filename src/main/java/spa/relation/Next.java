@@ -34,11 +34,11 @@ public class Next implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParamLineNum != 0 && rightParamLineNum != 0) {
-            closureResult.setBoolResult(pkb.checkNext(pkb.getStmtByLineNumber(leftParamLineNum), pkb.getStmtByLineNumber(rightParamLineNum), _transient));
+            closureResult.setBoolResult(pkb.isNext(pkb.getStmtByLine(leftParamLineNum), pkb.getStmtByLine(rightParamLineNum), _transient));
         } else if (leftParamLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getNext(pkb.getStmtByLineNumber(leftParamLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getNext(pkb.getStmtByLine(leftParamLineNum), _transient).isEmpty());
         } else if (rightParamLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getPrev(pkb.getStmtByLineNumber(rightParamLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getPrevious(pkb.getStmtByLine(rightParamLineNum), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
             closureResult.setBoolResult(false);
@@ -65,14 +65,14 @@ public class Next implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (rightParamLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getPrev(pkb.getStmtByLineNumber(rightParamLineNum), _transient), p1.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getPrevious(pkb.getStmtByLine(rightParamLineNum), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
             for (Node<ASTNode> val : allVals) {
-                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
+                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getPrevious(val, _transient), p1.getType());
                 for (Node<ASTNode> res : results) {
                     closureResult.addValue(res.getData().nodeToString());
                 }
@@ -94,7 +94,7 @@ public class Next implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParamLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getNext(pkb.getStmtByLineNumber(leftParamLineNum), _transient), p2.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getNext(pkb.getStmtByLine(leftParamLineNum), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
@@ -125,7 +125,7 @@ public class Next implements ClosureResultEvaluator {
         }
         List<Node<ASTNode>> allQVals = filter.filterNodesByType(pkb.getAllValues("statement"), p2.getType());
         for (Node<ASTNode> val : allQVals) {
-            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getPrev(val, _transient), p1.getType());
+            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getPrevious(val, _transient), p1.getType());
             for (Node<ASTNode> r : qResults) {
                 closureResult.addQp(val.getData().nodeToString(), r.getData().nodeToString());
             }

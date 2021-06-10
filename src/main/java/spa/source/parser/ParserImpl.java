@@ -115,7 +115,7 @@ public class ParserImpl implements Parser {
         validate(matchName(token), String.format("Expected calle procedure name. Found '%s'.", token));
         Node<ASTNode> callNode = ast.createNode(NodeType.CALL);
         callNode.getData().putParam(NodeParamType.CALLER, procName);
-        callNode.getData().putParam(NodeParamType.CALLEE, token);
+        callNode.getData().putParam(NodeParamType.CALLED_BY, token);
         token = tokens.next();
         validate(match(token, ";"), String.format("Expected ';'. Found '%s'.", token));
         token = tokens.next();

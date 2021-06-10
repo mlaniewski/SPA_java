@@ -41,11 +41,11 @@ public class Uses implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if ((leftParamLineNum != 0 || !leftParamName.isEmpty()) && !rightParamName.isEmpty()) {
-            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLineNumber(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
-            closureResult.setBoolResult(pkb.checkUses(n, rightParamName));
+            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLine(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
+            closureResult.setBoolResult(pkb.isUses(n, rightParamName));
         } else if (leftParamLineNum != 0 || !leftParamName.isEmpty()) {
-            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLineNumber(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
-            closureResult.setBoolResult(!pkb.getUsed(n).isEmpty());
+            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLine(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
+            closureResult.setBoolResult(!pkb.getUsedBy(n).isEmpty());
         } else if (!rightParamName.isEmpty()) {
             closureResult.setBoolResult(!pkb.getUsing(rightParamName).isEmpty());
         } else {
@@ -111,8 +111,8 @@ public class Uses implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParamLineNum != 0 || !leftParamName.isEmpty()) { // stmt lub proc
-            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLineNumber(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
-            List<String> results = pkb.getUsed(n);
+            Node<ASTNode> n = leftParamLineNum != 0 ? pkb.getStmtByLine(leftParamLineNum) : pkb.getProcedureByName(leftParamName);
+            List<String> results = pkb.getUsedBy(n);
             for (String res : results) {
                 closureResult.addValue(res);
             }
@@ -121,7 +121,7 @@ public class Uses implements ClosureResultEvaluator {
             List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
             allVals.addAll(procNodes);
             for (Node<ASTNode> val : allVals) {
-                List<String> results = pkb.getUsed(val);
+                List<String> results = pkb.getUsedBy(val);
                 for (String res : results) {
                     closureResult.addValue(res);
                 }
@@ -143,7 +143,7 @@ public class Uses implements ClosureResultEvaluator {
 
         List<Node<ASTNode>> allPVals = filter.filterNodesByType(allVals, p1.getType());
         for (Node<ASTNode> val : allPVals) {
-            List<String> pResults = pkb.getUsed(val);
+            List<String> pResults = pkb.getUsedBy(val);
             for (String r : pResults) {
                 closureResult.addPq(val.getData().nodeToString(), r);
             }

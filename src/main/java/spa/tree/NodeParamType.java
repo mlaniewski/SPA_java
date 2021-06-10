@@ -3,6 +3,6 @@ package spa.tree;
 public enum NodeParamType {
     NAME,
     CALLER,
-    CALLEE,
+    CALLED_BY,
     COND
 }

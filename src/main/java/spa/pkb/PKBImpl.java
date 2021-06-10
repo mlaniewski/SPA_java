@@ -12,8 +12,8 @@ import java.util.*;
 public class PKBImpl implements PKB {
     private Map<Integer, Set<Integer>> callers;
     private Map<Integer, Set<Integer>> callersT;
-    private Map<Integer, Set<Integer>> callees;
-    private Map<Integer, Set<Integer>> calleesT;
+    private Map<Integer, Set<Integer>> calledBy;
+    private Map<Integer, Set<Integer>> calledByT;
     private Map<Integer, Set<String>> modifies;
     private Map<String, Set<Integer>> modified;
     private Map<Integer, Set<String>> uses;
@@ -32,11 +32,11 @@ public class PKBImpl implements PKB {
     private Set<String> constants;
     private AST ast;
 
-    public PKBImpl(Map<Integer, Set<Integer>> callers, Map<Integer, Set<Integer>> callersT, Map<Integer, Set<Integer>> callees, Map<Integer, Set<Integer>> calleesT, Map<Integer, Set<String>> modifies, Map<String, Set<Integer>> modified, Map<Integer, Set<String>> uses, Map<String, Set<Integer>> used, Map<Integer, Integer> parent, Map<Integer, Set<Integer>> parentT, Map<Integer, Set<Integer>> children, Map<Integer, Set<Integer>> childrenT, Map<Integer, Set<Integer>> nextN, Map<Integer, Set<Integer>> nextT, Map<Integer, Set<Integer>> prevN, Map<Integer, Set<Integer>> prevT, Map<Integer, Set<String>> pattern, Map<Integer, String> fullPattern, Set<String> variables, Set<String> constants, AST ast) {
+    public PKBImpl(Map<Integer, Set<Integer>> callers, Map<Integer, Set<Integer>> callersT, Map<Integer, Set<Integer>> calledBy, Map<Integer, Set<Integer>> calledByT, Map<Integer, Set<String>> modifies, Map<String, Set<Integer>> modified, Map<Integer, Set<String>> uses, Map<String, Set<Integer>> used, Map<Integer, Integer> parent, Map<Integer, Set<Integer>> parentT, Map<Integer, Set<Integer>> children, Map<Integer, Set<Integer>> childrenT, Map<Integer, Set<Integer>> nextN, Map<Integer, Set<Integer>> nextT, Map<Integer, Set<Integer>> prevN, Map<Integer, Set<Integer>> prevT, Map<Integer, Set<String>> pattern, Map<Integer, String> fullPattern, Set<String> variables, Set<String> constants, AST ast) {
         this.callers = callers;
         this.callersT = callersT;
-        this.callees = callees;
-        this.calleesT = calleesT;
+        this.calledBy = calledBy;
+        this.calledByT = calledByT;
         this.modifies = modifies;
         this.modified = modified;
         this.uses = uses;
@@ -77,8 +77,8 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public Node<ASTNode> getStmtByLineNumber(int lineNumber) throws SPAException {
-        int idx = lineNumber - 1;
+    public Node<ASTNode> getStmtByLine(int line) throws SPAException {
+        int idx = line - 1;
         if (ast.getProgramLines().size() <= idx) {
             throw new SPAException();
         }
@@ -89,31 +89,31 @@ public class PKBImpl implements PKB {
     // PKB API
     //*****************
     @Override
-    public boolean checkFollows(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient) {
-        Iterator<Node<ASTNode>> sIt = s1.getChildren().iterator();
+    public boolean isFollows(Node<ASTNode> node1, Node<ASTNode> node2, boolean _transient) {
+        Iterator<Node<ASTNode>> sIt = node1.getChildren().iterator();
         ASTNode s = sIt.next().getData();
         if (_transient) {
-            Node<ASTNode> end = s1.getParent().getChildren().get(s1.getParent().getChildren().size()-1);
+            Node<ASTNode> end = node1.getParent().getChildren().get(node1.getParent().getChildren().size()-1);
             while (!s.equals(end.getData())) {
-                if (s.equals(s2.getData())) {
+                if (s.equals(node2.getData())) {
                     return true;
                 }
                 s = sIt.next().getData();
             }
             return false;
         } else {
-            return s.equals(s2.getData());
+            return s.equals(node2.getData());
         }
     }
 
     @Override
-    public List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient) {
+    public List<Node<ASTNode>> getFollowing(Node<ASTNode> node1, boolean _transient) {
         List<Node<ASTNode>> following = new ArrayList<>();
-        List<Node<ASTNode>> s1Childs = s1.getParent().getChildren();
+        List<Node<ASTNode>> s1Childs = node1.getParent().getChildren();
         Iterator<Node<ASTNode>> sIt = s1Childs.iterator();
 
         Node<ASTNode> s = sIt.next();
-        while (!s.getData().equals(s1.getData())) {
+        while (!s.getData().equals(node1.getData())) {
             s = sIt.next();
         }
         if (sIt.hasNext()) {
@@ -132,10 +132,10 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public List<Node<ASTNode>> getFollowed(Node<ASTNode> s2, boolean _transient) {
+    public List<Node<ASTNode>> getFollowedBy(Node<ASTNode> node2, boolean _transient) {
         List<Node<ASTNode>> followed = new ArrayList<>();
-        Node<ASTNode> end = s2;
-        Iterator<Node<ASTNode>> sIt = s2.getParent().getChildren().iterator();
+        Node<ASTNode> end = node2;
+        Iterator<Node<ASTNode>> sIt = node2.getParent().getChildren().iterator();
 
         Node<ASTNode> s = sIt.next();
         while (!s.getData().equals(end.getData())) {
@@ -156,18 +156,18 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public boolean checkParent(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient) {
-        int s1Id = s1.getData().getId();
-        int s2Id = s2.getData().getId();
+    public boolean isParent(Node<ASTNode> node1, Node<ASTNode> node2, boolean _transient) {
+        int s1Id = node1.getData().getId();
+        int s2Id = node2.getData().getId();
         return _transient ?
                 parentT.get(s2Id).contains(s1Id) :
                 parent.get(s2Id) == s1Id;
     }
 
     @Override
-    public List<Node<ASTNode>> getParent(Node<ASTNode> s1, boolean _transient) {
+    public List<Node<ASTNode>> getParent(Node<ASTNode> node1, boolean _transient) {
         List<Node<ASTNode>> parents = new ArrayList<>();
-        int s1Id = s1.getData().getId();
+        int s1Id = node1.getData().getId();
 
         if (!_transient) {
             Node<ASTNode> p = ASTNode.getNodeById(parent.get(s1Id));
@@ -189,9 +189,9 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public List<Node<ASTNode>> getChildren(Node<ASTNode> s2, boolean _transient) {
+    public List<Node<ASTNode>> getChildren(Node<ASTNode> node2, boolean _transient) {
         List<Node<ASTNode>> result = new ArrayList<>();
-        int s2Id = s2.getData().getId();
+        int s2Id = node2.getData().getId();
         Map<Integer, Set<Integer>> rel = _transient ? childrenT : children;
         Set<Integer> relSet = rel.get(s2Id);
 
@@ -204,14 +204,14 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public boolean checkUses(Node<ASTNode> n, String var) {
-        Set<String> vars = uses.get(n.getData().getId());
+    public boolean isUses(Node<ASTNode> node, String var) {
+        Set<String> vars = uses.get(node.getData().getId());
         return vars.contains(var);
     }
 
     @Override
-    public List<String> getUsed(Node<ASTNode> n) {
-        Set<String> vars = uses.get(n.getData().getId());
+    public List<String> getUsedBy(Node<ASTNode> node) {
+        Set<String> vars = uses.get(node.getData().getId());
         if (vars == null) {
             return new ArrayList<>();
         }
@@ -225,14 +225,14 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public boolean checkModifies(Node<ASTNode> n, String var) {
-        Set<String> vars = modifies.get(n.getData().getId());
+    public boolean isModifies(Node<ASTNode> node, String var) {
+        Set<String> vars = modifies.get(node.getData().getId());
         return vars.contains(var);
     }
 
     @Override
-    public List<String> getModified(Node<ASTNode> n) {
-        Set<String> vars = modifies.get(n.getData().getId());
+    public List<String> getModifiedBy(Node<ASTNode> node) {
+        Set<String> vars = modifies.get(node.getData().getId());
         return new ArrayList<>(vars);
     }
 
@@ -243,30 +243,30 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public boolean checkCalls(Node<ASTNode> p1, Node<ASTNode> p2, boolean _transient) {
+    public boolean isCalls(Node<ASTNode> proc1, Node<ASTNode> proc2, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? callersT : callers;
-        int p1Id = p1.getData().getId();
-        int p2Id = p2.getData().getId();
+        int p1Id = proc1.getData().getId();
+        int p2Id = proc2.getData().getId();
         return rel.get(p1Id).contains(p2Id);
     }
 
     @Override
-    public List<Node<ASTNode>> getCallees(Node<ASTNode> p1, boolean _transient) {
+    public List<Node<ASTNode>> getCalledBy(Node<ASTNode> proc1, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? callersT : callers;
-        return createNodeCollection(rel.get(p1.getData().getId()));
+        return createNodeCollection(rel.get(proc1.getData().getId()));
     }
 
     @Override
-    public List<Node<ASTNode>> getCallers(Node<ASTNode> p2, boolean _transient) {
-        Map<Integer, Set<Integer>> rel = _transient ? calleesT : callees;
-        return createNodeCollection(rel.get(p2.getData().getId()));
+    public List<Node<ASTNode>> getCalling(Node<ASTNode> proc2, boolean _transient) {
+        Map<Integer, Set<Integer>> rel = _transient ? calledByT : calledBy;
+        return createNodeCollection(rel.get(proc2.getData().getId()));
     }
 
     @Override
-    public boolean checkNext(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient) {
+    public boolean isNext(Node<ASTNode> node1, Node<ASTNode> node2, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? nextT : nextN;
-        int s1Id = s1.getData().getId();
-        int s2Id = s2.getData().getId();
+        int s1Id = node1.getData().getId();
+        int s2Id = node2.getData().getId();
         if (rel.get(s1Id) == null) {
             return false;
         }
@@ -274,15 +274,15 @@ public class PKBImpl implements PKB {
     }
 
     @Override
-    public List<Node<ASTNode>> getNext(Node<ASTNode> s1, boolean _transient) {
+    public List<Node<ASTNode>> getNext(Node<ASTNode> node1, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? nextT : nextN;
-        return createNodeCollection(rel.get(s1.getData().getId()));
+        return createNodeCollection(rel.get(node1.getData().getId()));
     }
 
     @Override
-    public List<Node<ASTNode>> getPrev(Node<ASTNode> s2, boolean _transient) {
+    public List<Node<ASTNode>> getPrevious(Node<ASTNode> node2, boolean _transient) {
         Map<Integer, Set<Integer>> rel = _transient ? prevT : prevN;
-        return createNodeCollection(rel.get(s2.getData().getId()));
+        return createNodeCollection(rel.get(node2.getData().getId()));
     }
 
     @Override

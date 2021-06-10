@@ -9,26 +9,26 @@ import java.util.Set;
 
 public interface PKB {
     Node<ASTNode> getProcedureByName(String procedureName);
-    Node<ASTNode> getStmtByLineNumber(int lineNumber) throws SPAException;
+    Node<ASTNode> getStmtByLine(int line) throws SPAException;
 
-    boolean checkFollows(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient);
-    List<Node<ASTNode>> getFollowing(Node<ASTNode> s1, boolean _transient);
-    List<Node<ASTNode>> getFollowed(Node<ASTNode> s2, boolean _transient);
-    boolean checkParent(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient);
-    List<Node<ASTNode>> getParent(Node<ASTNode> s1, boolean _transient);
-    List<Node<ASTNode>> getChildren(Node<ASTNode> s2, boolean _transient);
-    boolean checkUses(Node<ASTNode> n, String var);
-    List<String> getUsed(Node<ASTNode> n);
+    boolean isFollows(Node<ASTNode> node1, Node<ASTNode> node2, boolean _transient);
+    List<Node<ASTNode>> getFollowing(Node<ASTNode> node1, boolean _transient);
+    List<Node<ASTNode>> getFollowedBy(Node<ASTNode> node2, boolean _transient);
+    boolean isParent(Node<ASTNode> node1, Node<ASTNode> node2, boolean _transient);
+    List<Node<ASTNode>> getParent(Node<ASTNode> node1, boolean _transient);
+    List<Node<ASTNode>> getChildren(Node<ASTNode> node2, boolean _transient);
+    boolean isUses(Node<ASTNode> node, String var);
+    List<String> getUsedBy(Node<ASTNode> node);
     List<Node<ASTNode>> getUsing(String var);
-    boolean checkModifies(Node<ASTNode> n, String var);
-    List<String> getModified(Node<ASTNode> n);
+    boolean isModifies(Node<ASTNode> node, String var);
+    List<String> getModifiedBy(Node<ASTNode> node);
     List<Node<ASTNode>> getModifying(String var);
-    boolean checkCalls(Node<ASTNode> p1, Node<ASTNode> p2, boolean _transient);
-    List<Node<ASTNode>> getCallees(Node<ASTNode> p1, boolean _transient);
-    List<Node<ASTNode>> getCallers(Node<ASTNode> p2, boolean _transient);
-    boolean checkNext(Node<ASTNode> s1, Node<ASTNode> s2, boolean _transient);
-    List<Node<ASTNode>> getNext(Node<ASTNode> s1, boolean _transient);
-    List<Node<ASTNode>> getPrev(Node<ASTNode> s2, boolean _transient);
+    boolean isCalls(Node<ASTNode> proc1, Node<ASTNode> proc2, boolean _transient);
+    List<Node<ASTNode>> getCalledBy(Node<ASTNode> proc1, boolean _transient);
+    List<Node<ASTNode>> getCalling(Node<ASTNode> proc2, boolean _transient);
+    boolean isNext(Node<ASTNode> node1, Node<ASTNode> node2, boolean _transient);
+    List<Node<ASTNode>> getNext(Node<ASTNode> node1, boolean _transient);
+    List<Node<ASTNode>> getPrevious(Node<ASTNode> node2, boolean _transient);
     List<Node<ASTNode>> getPattern(String var, String expr);
 
     Set<String> getAllPropertyValues(String propName);

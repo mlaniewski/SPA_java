@@ -34,11 +34,11 @@ public class Follows implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParmLineNum != 0 && rightParmLineNum != 0) {
-            closureResult.setBoolResult(pkb.checkFollows(pkb.getStmtByLineNumber(leftParmLineNum), pkb.getStmtByLineNumber(rightParmLineNum), _transient));
+            closureResult.setBoolResult(pkb.isFollows(pkb.getStmtByLine(leftParmLineNum), pkb.getStmtByLine(rightParmLineNum), _transient));
         } else if (leftParmLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLineNumber(leftParmLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getFollowing(pkb.getStmtByLine(leftParmLineNum), _transient).isEmpty());
         } else if (rightParmLineNum != 0) {
-            closureResult.setBoolResult(!pkb.getFollowed(pkb.getStmtByLineNumber(rightParmLineNum), _transient).isEmpty());
+            closureResult.setBoolResult(!pkb.getFollowedBy(pkb.getStmtByLine(rightParmLineNum), _transient).isEmpty());
         } else {
             List<Node<ASTNode>> nodes = pkb.getAllValues("statement");
             closureResult.setBoolResult(false);
@@ -65,14 +65,14 @@ public class Follows implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (rightParamLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowed(pkb.getStmtByLineNumber(rightParamLineNum), _transient), p1.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowedBy(pkb.getStmtByLine(rightParamLineNum), _transient), p1.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
         } else { // _
             List<Node<ASTNode>> allVals = pkb.getAllValues("statement");
             for (Node<ASTNode> val : allVals) {
-                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowed(val, _transient), p1.getType());
+                List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowedBy(val, _transient), p1.getType());
                 for (Node<ASTNode> res : results) {
                     closureResult.addValue(res.getData().nodeToString());
                 }
@@ -94,7 +94,7 @@ public class Follows implements ClosureResultEvaluator {
 
         ClosureResult closureResult = new ClosureResult();
         if (leftParamLineNum != 0) { // numer linii
-            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowing(pkb.getStmtByLineNumber(leftParamLineNum), _transient), p2.getType());
+            List<Node<ASTNode>> results = filter.filterNodesByType(pkb.getFollowing(pkb.getStmtByLine(leftParamLineNum), _transient), p2.getType());
             for (Node<ASTNode> res : results) {
                 closureResult.addValue(res.getData().nodeToString());
             }
@@ -126,7 +126,7 @@ public class Follows implements ClosureResultEvaluator {
         }
         List<Node<ASTNode>> allQVals = filter.filterNodesByType(pkb.getAllValues("statement"), p2.getType());
         for (Node<ASTNode> val : allQVals) {
-            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getFollowed(val, _transient), p1.getType());
+            List<Node<ASTNode>> qResults = filter.filterNodesByType(pkb.getFollowedBy(val, _transient), p1.getType());
             for (Node<ASTNode> r : qResults) {
                 closureResult.addQp(val.getData().nodeToString(), r.getData().nodeToString());
             }
